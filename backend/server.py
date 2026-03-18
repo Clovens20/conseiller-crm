@@ -1,10 +1,8 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
+from fastapi import FastAPI, APIRouter, HTTPException, Header
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, and_
-from sqlalchemy.orm import selectinload
+from supabase import create_client, Client
 import os
 import logging
 from pathlib import Path
@@ -17,11 +15,13 @@ import jwt
 import io
 import csv
 
-from database import get_db, engine, Base
-from models import User, Client, ClientStatus
-
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Supabase client
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret_key')
@@ -52,10 +52,9 @@ class UserLogin(BaseModel):
     password: str
 
 class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
     id: str
     email: str
-    created_at: datetime
+    created_at: str
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -71,8 +70,8 @@ class ClientCreate(BaseModel):
     conjoint: Optional[str] = None
     nb_enfants: Optional[int] = 0
     statut: Optional[str] = "prospect"
-    date_rdv: Optional[datetime] = None
-    date_suivi: Optional[date] = None
+    date_rdv: Optional[str] = None
+    date_suivi: Optional[str] = None
     notes: Optional[str] = None
     source: Optional[str] = None
 
@@ -85,29 +84,28 @@ class ClientUpdate(BaseModel):
     conjoint: Optional[str] = None
     nb_enfants: Optional[int] = None
     statut: Optional[str] = None
-    date_rdv: Optional[datetime] = None
-    date_suivi: Optional[date] = None
+    date_rdv: Optional[str] = None
+    date_suivi: Optional[str] = None
     notes: Optional[str] = None
     source: Optional[str] = None
 
 class ClientResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
     id: str
     user_id: str
     prenom: str
     nom: str
     telephone: str
-    courriel: Optional[str]
-    adresse: Optional[str]
-    conjoint: Optional[str]
-    nb_enfants: Optional[int]
+    courriel: Optional[str] = None
+    adresse: Optional[str] = None
+    conjoint: Optional[str] = None
+    nb_enfants: Optional[int] = None
     statut: str
-    date_rdv: Optional[datetime]
-    date_suivi: Optional[date]
-    notes: Optional[str]
-    source: Optional[str]
-    created_at: datetime
-    updated_at: datetime
+    date_rdv: Optional[str] = None
+    date_suivi: Optional[str] = None
+    notes: Optional[str] = None
+    source: Optional[str] = None
+    created_at: str
+    updated_at: str
 
 class StatsResponse(BaseModel):
     total_clients: int
@@ -139,417 +137,238 @@ def decode_token(token: str) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token invalide")
 
-async def get_current_user(token: str = None, db: AsyncSession = None) -> User:
-    if not token:
+def get_user_id_from_auth(authorization: str) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token manquant")
-    
+    token = authorization.replace("Bearer ", "")
     payload = decode_token(token)
-    user_id = payload.get("user_id")
-    
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-    
-    if not user:
-        raise HTTPException(status_code=401, detail="Utilisateur non trouvé")
-    
-    return user
+    return payload.get("user_id")
 
 # ============ Auth Routes ============
 
 @api_router.post("/auth/register", response_model=TokenResponse)
-async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(data: UserCreate):
     # Check if user exists
-    result = await db.execute(select(User).where(User.email == data.email))
-    existing = result.scalar_one_or_none()
-    if existing:
+    result = supabase.table('users').select('*').eq('email', data.email).execute()
+    if result.data:
         raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
     
     # Create user
-    user = User(
-        id=str(uuid.uuid4()),
-        email=data.email,
-        password_hash=hash_password(data.password)
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    user_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    user_data = {
+        'id': user_id,
+        'email': data.email,
+        'password_hash': hash_password(data.password),
+        'created_at': now
+    }
     
-    token = create_token(user.id, user.email)
+    supabase.table('users').insert(user_data).execute()
+    
+    token = create_token(user_id, data.email)
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=user.id, email=user.email, created_at=user.created_at)
+        user=UserResponse(id=user_id, email=data.email, created_at=now)
     )
 
 @api_router.post("/auth/login", response_model=TokenResponse)
-async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == data.email))
-    user = result.scalar_one_or_none()
+async def login(data: UserLogin):
+    result = supabase.table('users').select('*').eq('email', data.email).execute()
     
-    if not user or not verify_password(data.password, user.password_hash):
+    if not result.data:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
     
-    token = create_token(user.id, user.email)
+    user = result.data[0]
+    if not verify_password(data.password, user['password_hash']):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    
+    token = create_token(user['id'], user['email'])
     return TokenResponse(
         access_token=token,
-        user=UserResponse(id=user.id, email=user.email, created_at=user.created_at)
+        user=UserResponse(id=user['id'], email=user['email'], created_at=user['created_at'])
     )
 
 @api_router.get("/auth/me", response_model=UserResponse)
-async def get_me(authorization: str = None, db: AsyncSession = Depends(get_db)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Token manquant")
+async def get_me(authorization: str = Header(None)):
+    user_id = get_user_id_from_auth(authorization)
+    result = supabase.table('users').select('*').eq('id', user_id).execute()
     
-    token = authorization.replace("Bearer ", "")
-    user = await get_current_user(token, db)
-    return UserResponse(id=user.id, email=user.email, created_at=user.created_at)
+    if not result.data:
+        raise HTTPException(status_code=401, detail="Utilisateur non trouvé")
+    
+    user = result.data[0]
+    return UserResponse(id=user['id'], email=user['email'], created_at=user['created_at'])
 
 # ============ Client Routes ============
 
-async def get_user_from_auth(authorization: str, db: AsyncSession) -> User:
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Token manquant")
-    token = authorization.replace("Bearer ", "")
-    return await get_current_user(token, db)
-
 @api_router.get("/clients", response_model=List[ClientResponse])
 async def get_clients(
-    authorization: str = None,
+    authorization: str = Header(None),
     search: Optional[str] = None,
-    statut: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    statut: Optional[str] = None
 ):
-    user = await get_user_from_auth(authorization, db)
+    user_id = get_user_id_from_auth(authorization)
     
-    query = select(Client).where(Client.user_id == user.id)
-    
-    if search:
-        search_term = f"%{search}%"
-        query = query.where(
-            or_(
-                Client.prenom.ilike(search_term),
-                Client.nom.ilike(search_term),
-                Client.telephone.ilike(search_term),
-                Client.courriel.ilike(search_term)
-            )
-        )
+    query = supabase.table('clients').select('*').eq('user_id', user_id)
     
     if statut:
-        query = query.where(Client.statut == ClientStatus(statut))
+        query = query.eq('statut', statut)
     
-    query = query.order_by(Client.updated_at.desc())
+    query = query.order('updated_at', desc=True)
+    result = query.execute()
     
-    result = await db.execute(query)
-    clients = result.scalars().all()
+    clients = result.data or []
     
-    return [ClientResponse(
-        id=c.id,
-        user_id=c.user_id,
-        prenom=c.prenom,
-        nom=c.nom,
-        telephone=c.telephone,
-        courriel=c.courriel,
-        adresse=c.adresse,
-        conjoint=c.conjoint,
-        nb_enfants=c.nb_enfants,
-        statut=c.statut.value,
-        date_rdv=c.date_rdv,
-        date_suivi=c.date_suivi,
-        notes=c.notes,
-        source=c.source,
-        created_at=c.created_at,
-        updated_at=c.updated_at
-    ) for c in clients]
+    # Filter by search if provided
+    if search:
+        search_lower = search.lower()
+        clients = [c for c in clients if 
+            search_lower in c.get('prenom', '').lower() or
+            search_lower in c.get('nom', '').lower() or
+            search_lower in c.get('telephone', '').lower() or
+            search_lower in (c.get('courriel') or '').lower()
+        ]
+    
+    return [ClientResponse(**c) for c in clients]
 
 @api_router.post("/clients", response_model=ClientResponse)
 async def create_client(
     data: ClientCreate,
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
+    authorization: str = Header(None)
 ):
-    user = await get_user_from_auth(authorization, db)
+    user_id = get_user_id_from_auth(authorization)
     
-    client = Client(
-        id=str(uuid.uuid4()),
-        user_id=user.id,
-        prenom=data.prenom,
-        nom=data.nom,
-        telephone=data.telephone,
-        courriel=data.courriel,
-        adresse=data.adresse,
-        conjoint=data.conjoint,
-        nb_enfants=data.nb_enfants or 0,
-        statut=ClientStatus(data.statut) if data.statut else ClientStatus.prospect,
-        date_rdv=data.date_rdv,
-        date_suivi=data.date_suivi,
-        notes=data.notes,
-        source=data.source
-    )
+    now = datetime.now(timezone.utc).isoformat()
+    client_data = {
+        'id': str(uuid.uuid4()),
+        'user_id': user_id,
+        'prenom': data.prenom,
+        'nom': data.nom,
+        'telephone': data.telephone,
+        'courriel': data.courriel,
+        'adresse': data.adresse,
+        'conjoint': data.conjoint,
+        'nb_enfants': data.nb_enfants or 0,
+        'statut': data.statut or 'prospect',
+        'date_rdv': data.date_rdv,
+        'date_suivi': data.date_suivi,
+        'notes': data.notes,
+        'source': data.source,
+        'created_at': now,
+        'updated_at': now
+    }
     
-    db.add(client)
-    await db.commit()
-    await db.refresh(client)
-    
-    return ClientResponse(
-        id=client.id,
-        user_id=client.user_id,
-        prenom=client.prenom,
-        nom=client.nom,
-        telephone=client.telephone,
-        courriel=client.courriel,
-        adresse=client.adresse,
-        conjoint=client.conjoint,
-        nb_enfants=client.nb_enfants,
-        statut=client.statut.value,
-        date_rdv=client.date_rdv,
-        date_suivi=client.date_suivi,
-        notes=client.notes,
-        source=client.source,
-        created_at=client.created_at,
-        updated_at=client.updated_at
-    )
+    result = supabase.table('clients').insert(client_data).execute()
+    return ClientResponse(**result.data[0])
 
 @api_router.get("/clients/{client_id}", response_model=ClientResponse)
 async def get_client(
     client_id: str,
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
+    authorization: str = Header(None)
 ):
-    user = await get_user_from_auth(authorization, db)
+    user_id = get_user_id_from_auth(authorization)
     
-    result = await db.execute(
-        select(Client).where(
-            and_(Client.id == client_id, Client.user_id == user.id)
-        )
-    )
-    client = result.scalar_one_or_none()
+    result = supabase.table('clients').select('*').eq('id', client_id).eq('user_id', user_id).execute()
     
-    if not client:
+    if not result.data:
         raise HTTPException(status_code=404, detail="Client non trouvé")
     
-    return ClientResponse(
-        id=client.id,
-        user_id=client.user_id,
-        prenom=client.prenom,
-        nom=client.nom,
-        telephone=client.telephone,
-        courriel=client.courriel,
-        adresse=client.adresse,
-        conjoint=client.conjoint,
-        nb_enfants=client.nb_enfants,
-        statut=client.statut.value,
-        date_rdv=client.date_rdv,
-        date_suivi=client.date_suivi,
-        notes=client.notes,
-        source=client.source,
-        created_at=client.created_at,
-        updated_at=client.updated_at
-    )
+    return ClientResponse(**result.data[0])
 
 @api_router.put("/clients/{client_id}", response_model=ClientResponse)
 async def update_client(
     client_id: str,
     data: ClientUpdate,
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
+    authorization: str = Header(None)
 ):
-    user = await get_user_from_auth(authorization, db)
+    user_id = get_user_id_from_auth(authorization)
     
-    result = await db.execute(
-        select(Client).where(
-            and_(Client.id == client_id, Client.user_id == user.id)
-        )
-    )
-    client = result.scalar_one_or_none()
-    
-    if not client:
+    # Check if client exists
+    check = supabase.table('clients').select('*').eq('id', client_id).eq('user_id', user_id).execute()
+    if not check.data:
         raise HTTPException(status_code=404, detail="Client non trouvé")
     
-    update_data = data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        if key == "statut" and value:
-            setattr(client, key, ClientStatus(value))
-        else:
-            setattr(client, key, value)
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     
-    client.updated_at = datetime.now(timezone.utc)
-    await db.commit()
-    await db.refresh(client)
-    
-    return ClientResponse(
-        id=client.id,
-        user_id=client.user_id,
-        prenom=client.prenom,
-        nom=client.nom,
-        telephone=client.telephone,
-        courriel=client.courriel,
-        adresse=client.adresse,
-        conjoint=client.conjoint,
-        nb_enfants=client.nb_enfants,
-        statut=client.statut.value,
-        date_rdv=client.date_rdv,
-        date_suivi=client.date_suivi,
-        notes=client.notes,
-        source=client.source,
-        created_at=client.created_at,
-        updated_at=client.updated_at
-    )
+    result = supabase.table('clients').update(update_data).eq('id', client_id).execute()
+    return ClientResponse(**result.data[0])
 
 @api_router.delete("/clients/{client_id}")
 async def delete_client(
     client_id: str,
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
+    authorization: str = Header(None)
 ):
-    user = await get_user_from_auth(authorization, db)
+    user_id = get_user_id_from_auth(authorization)
     
-    result = await db.execute(
-        select(Client).where(
-            and_(Client.id == client_id, Client.user_id == user.id)
-        )
-    )
-    client = result.scalar_one_or_none()
-    
-    if not client:
+    # Check if client exists
+    check = supabase.table('clients').select('*').eq('id', client_id).eq('user_id', user_id).execute()
+    if not check.data:
         raise HTTPException(status_code=404, detail="Client non trouvé")
     
-    await db.delete(client)
-    await db.commit()
-    
+    supabase.table('clients').delete().eq('id', client_id).execute()
     return {"message": "Client supprimé avec succès"}
 
 # ============ Agenda Routes ============
 
 @api_router.get("/agenda/rdv", response_model=List[ClientResponse])
-async def get_rdv(
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    user = await get_user_from_auth(authorization, db)
+async def get_rdv(authorization: str = Header(None)):
+    user_id = get_user_id_from_auth(authorization)
     
-    result = await db.execute(
-        select(Client)
-        .where(
-            and_(
-                Client.user_id == user.id,
-                Client.date_rdv.isnot(None)
-            )
-        )
-        .order_by(Client.date_rdv.asc())
-    )
-    clients = result.scalars().all()
+    result = supabase.table('clients').select('*').eq('user_id', user_id).not_.is_('date_rdv', 'null').order('date_rdv', desc=False).execute()
     
-    return [ClientResponse(
-        id=c.id,
-        user_id=c.user_id,
-        prenom=c.prenom,
-        nom=c.nom,
-        telephone=c.telephone,
-        courriel=c.courriel,
-        adresse=c.adresse,
-        conjoint=c.conjoint,
-        nb_enfants=c.nb_enfants,
-        statut=c.statut.value,
-        date_rdv=c.date_rdv,
-        date_suivi=c.date_suivi,
-        notes=c.notes,
-        source=c.source,
-        created_at=c.created_at,
-        updated_at=c.updated_at
-    ) for c in clients]
+    return [ClientResponse(**c) for c in (result.data or [])]
 
 @api_router.get("/agenda/suivis", response_model=List[ClientResponse])
-async def get_suivis(
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    user = await get_user_from_auth(authorization, db)
+async def get_suivis(authorization: str = Header(None)):
+    user_id = get_user_id_from_auth(authorization)
     
-    result = await db.execute(
-        select(Client)
-        .where(
-            and_(
-                Client.user_id == user.id,
-                Client.date_suivi.isnot(None),
-                Client.statut != ClientStatus.ferme
-            )
-        )
-        .order_by(Client.date_suivi.asc())
-    )
-    clients = result.scalars().all()
+    result = supabase.table('clients').select('*').eq('user_id', user_id).not_.is_('date_suivi', 'null').neq('statut', 'ferme').order('date_suivi', desc=False).execute()
     
-    return [ClientResponse(
-        id=c.id,
-        user_id=c.user_id,
-        prenom=c.prenom,
-        nom=c.nom,
-        telephone=c.telephone,
-        courriel=c.courriel,
-        adresse=c.adresse,
-        conjoint=c.conjoint,
-        nb_enfants=c.nb_enfants,
-        statut=c.statut.value,
-        date_rdv=c.date_rdv,
-        date_suivi=c.date_suivi,
-        notes=c.notes,
-        source=c.source,
-        created_at=c.created_at,
-        updated_at=c.updated_at
-    ) for c in clients]
+    return [ClientResponse(**c) for c in (result.data or [])]
 
 # ============ Stats Route ============
 
 @api_router.get("/stats", response_model=StatsResponse)
-async def get_stats(
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    user = await get_user_from_auth(authorization, db)
+async def get_stats(authorization: str = Header(None)):
+    user_id = get_user_id_from_auth(authorization)
     
-    # Total clients
-    total_result = await db.execute(
-        select(func.count(Client.id)).where(Client.user_id == user.id)
-    )
-    total_clients = total_result.scalar() or 0
+    # Get all clients for this user
+    result = supabase.table('clients').select('*').eq('user_id', user_id).execute()
+    clients = result.data or []
     
-    # Total prospects
-    prospects_result = await db.execute(
-        select(func.count(Client.id)).where(
-            and_(Client.user_id == user.id, Client.statut == ClientStatus.prospect)
-        )
-    )
-    total_prospects = prospects_result.scalar() or 0
+    total_clients = len(clients)
+    total_prospects = len([c for c in clients if c.get('statut') == 'prospect'])
     
     # RDV this month
     now = datetime.now(timezone.utc)
     first_day = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     if now.month == 12:
-        last_day = now.replace(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        last_day = now.replace(year=now.year + 1, month=1, day=1)
     else:
-        last_day = now.replace(month=now.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        last_day = now.replace(month=now.month + 1, day=1)
     
-    rdv_result = await db.execute(
-        select(func.count(Client.id)).where(
-            and_(
-                Client.user_id == user.id,
-                Client.date_rdv >= first_day,
-                Client.date_rdv < last_day
-            )
-        )
-    )
-    rdv_this_month = rdv_result.scalar() or 0
+    rdv_this_month = 0
+    for c in clients:
+        if c.get('date_rdv'):
+            try:
+                rdv_date = datetime.fromisoformat(c['date_rdv'].replace('Z', '+00:00'))
+                if first_day <= rdv_date < last_day:
+                    rdv_this_month += 1
+            except:
+                pass
     
     # Suivis pending (today or past, not closed)
     today = date.today()
-    suivis_result = await db.execute(
-        select(func.count(Client.id)).where(
-            and_(
-                Client.user_id == user.id,
-                Client.date_suivi <= today,
-                Client.statut != ClientStatus.ferme
-            )
-        )
-    )
-    suivis_pending = suivis_result.scalar() or 0
+    suivis_pending = 0
+    for c in clients:
+        if c.get('date_suivi') and c.get('statut') != 'ferme':
+            try:
+                suivi_date = date.fromisoformat(c['date_suivi'][:10])
+                if suivi_date <= today:
+                    suivis_pending += 1
+            except:
+                pass
     
     return StatsResponse(
         total_clients=total_clients,
@@ -561,16 +380,11 @@ async def get_stats(
 # ============ Export Route ============
 
 @api_router.get("/clients/export/csv")
-async def export_clients_csv(
-    authorization: str = None,
-    db: AsyncSession = Depends(get_db)
-):
-    user = await get_user_from_auth(authorization, db)
+async def export_clients_csv(authorization: str = Header(None)):
+    user_id = get_user_id_from_auth(authorization)
     
-    result = await db.execute(
-        select(Client).where(Client.user_id == user.id).order_by(Client.nom.asc())
-    )
-    clients = result.scalars().all()
+    result = supabase.table('clients').select('*').eq('user_id', user_id).order('nom', desc=False).execute()
+    clients = result.data or []
     
     output = io.StringIO()
     writer = csv.writer(output)
@@ -585,11 +399,11 @@ async def export_clients_csv(
     # Data
     for c in clients:
         writer.writerow([
-            c.prenom, c.nom, c.telephone, c.courriel or '', c.adresse or '',
-            c.conjoint or '', c.nb_enfants or 0, c.statut.value,
-            c.date_rdv.isoformat() if c.date_rdv else '',
-            c.date_suivi.isoformat() if c.date_suivi else '',
-            c.notes or '', c.source or '', c.created_at.isoformat()
+            c.get('prenom', ''), c.get('nom', ''), c.get('telephone', ''),
+            c.get('courriel', ''), c.get('adresse', ''),
+            c.get('conjoint', ''), c.get('nb_enfants', 0), c.get('statut', ''),
+            c.get('date_rdv', ''), c.get('date_suivi', ''),
+            c.get('notes', ''), c.get('source', ''), c.get('created_at', '')
         ])
     
     output.seek(0)
@@ -623,5 +437,4 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    await engine.dispose()
     logger.info("Shutting down Conseiller Pro CRM API...")
