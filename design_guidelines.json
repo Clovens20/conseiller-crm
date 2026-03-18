@@ -1,0 +1,178 @@
+{
+  "identity": {
+    "name": "Conseiller Pro CRM",
+    "persona": "The Private Banker",
+    "emotional_tone": "Trustworthy, Efficient, Organized, Secure",
+    "visual_style": "Swiss Professional",
+    "principles": [
+      "Clarity over Decoration: Data must be readable at a glance.",
+      "Mobile-First Workflows: The road warrior experience is primary.",
+      "Visual Status: Use color to denote state immediately (Green = Client, Yellow = Prospect).",
+      "Trust through Consistency: Rigid alignment and consistent spacing build confidence."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-3xl md:text-4xl font-bold tracking-tight",
+      "h2": "text-2xl md:text-3xl font-semibold tracking-tight",
+      "h3": "text-xl font-semibold",
+      "body_lg": "text-lg leading-relaxed",
+      "body": "text-base leading-relaxed text-slate-600",
+      "small": "text-sm font-medium text-slate-500"
+    },
+    "imports": [
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@500;700;800&display=swap"
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#0F172A",
+        "foreground": "#F8FAFC",
+        "50": "#F8FAFC",
+        "100": "#F1F5F9",
+        "500": "#64748B",
+        "900": "#0F172A"
+      },
+      "secondary": {
+        "DEFAULT": "#F1F5F9",
+        "foreground": "#0F172A"
+      },
+      "accent": {
+        "DEFAULT": "#0EA5E9",
+        "foreground": "#FFFFFF"
+      },
+      "background": "#FFFFFF",
+      "surface": "#F8FAFC",
+      "border": "#E2E8F0"
+    },
+    "status": {
+      "prospect": {
+        "bg": "#FEF9C3",
+        "text": "#854D0E",
+        "border": "#FEF08A"
+      },
+      "client_actif": {
+        "bg": "#DCFCE7",
+        "text": "#166534",
+        "border": "#BBF7D0"
+      },
+      "en_suivi": {
+        "bg": "#E0F2FE",
+        "text": "#075985",
+        "border": "#BAE6FD"
+      },
+      "dossier_ferme": {
+        "bg": "#F3F4F6",
+        "text": "#4B5563",
+        "border": "#E5E7EB"
+      }
+    },
+    "gradients": {
+      "subtle_blue": "bg-gradient-to-br from-slate-50 to-slate-100"
+    }
+  },
+  "layout": {
+    "spacing": {
+      "container_padding": "p-4 md:p-8",
+      "section_gap": "gap-6 md:gap-8",
+      "item_gap": "gap-3"
+    },
+    "grid": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4",
+      "form": "grid grid-cols-1 md:grid-cols-2 gap-6"
+    },
+    "navigation": {
+      "mobile": "fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 h-16 flex items-center justify-around pb-safe",
+      "desktop": "fixed left-0 top-0 bottom-0 w-64 bg-slate-900 text-white z-50 hidden md:flex flex-col"
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200",
+      "padding": "p-5"
+    },
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 shadow-sm rounded-lg px-4 py-2 font-medium transition-all active:scale-95",
+      "secondary": "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg px-4 py-2 font-medium transition-all",
+      "ghost": "text-slate-600 hover:bg-slate-100 rounded-lg px-3 py-1.5 transition-colors"
+    },
+    "inputs": {
+      "base": "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all",
+      "label": "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block text-slate-700"
+    },
+    "badges": {
+      "base": "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border"
+    },
+    "avatars": {
+      "base": "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full font-bold"
+    }
+  },
+  "assets": {
+    "icons": {
+      "library": "lucide-react",
+      "set": {
+        "dashboard": "LayoutDashboard",
+        "clients": "Users",
+        "agenda": "Calendar",
+        "settings": "Settings",
+        "add": "Plus",
+        "search": "Search",
+        "filter": "Filter",
+        "edit": "Pencil",
+        "delete": "Trash2",
+        "check": "CheckCircle2",
+        "alert": "AlertCircle",
+        "menu": "Menu",
+        "logout": "LogOut"
+      }
+    },
+    "images": {
+      "login_bg": {
+        "url": "https://images.unsplash.com/photo-1721995432582-b0a486848fca?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBhcmNoaXRlY3R1cmUlMjBtaW5pbWFsaXN0JTIwYmx1ZSUyMGFic3RyYWN0fGVufDB8fHx8MTc3Mzg3NzAyOXww&ixlib=rb-4.1.0&q=85",
+        "alt": "Modern blue abstract architecture",
+        "usage": "Login page side panel or background"
+      },
+      "empty_state": {
+        "url": "https://images.unsplash.com/photo-1766832451498-a0e5dfb2201b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBvZmZpY2UlMjBhcmNoaXRlY3R1cmUlMjBtaW5pbWFsaXN0JTIwYmx1ZSUyMGFic3RyYWN0fGVufDB8fHx8MTc3Mzg3NzAyOXww&ixlib=rb-4.1.0&q=85",
+        "alt": "Minimalist office detail",
+        "usage": "Dashboard empty states or generic placeholder"
+      }
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "card": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+      "float": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05)"
+    },
+    "borders": "border-slate-200",
+    "radius": "rounded-lg"
+  },
+  "motion": {
+    "enter": "animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out",
+    "hover": "transition-all duration-200 ease-in-out",
+    "page_transition": "animate-in fade-in zoom-in-95 duration-300"
+  },
+  "instructions_to_main_agent": [
+    "1. UPDATE CSS VARIABLES: Modify `src/index.css` to use the slate-based palette defined in `colors`.",
+    "2. CUSTOMIZE SHADCN: Ensure all Shadcn components (Button, Card, Input) use `rounded-lg` and `border-slate-200`. Do not use default black borders.",
+    "3. RESPONSIVE NAVIGATION: Implement a strict conditional render: Sidebar for `md:flex` and Bottom Nav for `md:hidden`.",
+    "4. BENTO GRID: Use the Bento Grid strategy for the Dashboard stats. Large font for numbers.",
+    "5. AVATARS: Implement a helper function to generate consistent background colors for avatars based on user initials.",
+    "6. RICH TEXT: Use a simple implementation for the rich text editor (e.g., a basic textarea with toolbar or a lightweight library if available, but stick to standard inputs if complex). *Self-correction: Problem statement asks for Rich Text. Use a lightweight wrapper or standard styled `contenteditable` div if no library is allowed, but prefer simple reliable inputs.*",
+    "7. NOTIFICATIONS: Add a visual red dot or badge on the Agenda icon when follow-ups are overdue.",
+    "8. DATA-TESTID: Add `data-testid` to all interactive elements (buttons, inputs, cards) for testing."
+  ],
+  "universal_guidelines": [
+    "Avoid generic 'SaaS Blue' gradients. Use solid colors or very subtle mesh gradients.",
+    "Use 2-3x more whitespace than typical. `p-6` or `p-8` for cards.",
+    "Every interaction must have a hover state.",
+    "Do not center-align long text. Left align for readability.",
+    "Use 'Inter' for all numbers and data tables for tabular figures."
+  ]
+}
