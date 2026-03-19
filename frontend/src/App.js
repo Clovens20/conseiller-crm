@@ -10,6 +10,9 @@ import ClientsPage from "./pages/ClientsPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import ClientFormPage from "./pages/ClientFormPage";
 import AgendaPage from "./pages/AgendaPage";
+import ProfilePage from "./pages/ProfilePage";
+import LeadsPage from "./pages/LeadsPage";
+import PublicFormPage from "./pages/PublicFormPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -67,6 +70,9 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
+      
+      {/* Public form - accessible without auth */}
+      <Route path="/f/:slug" element={<PublicFormPage />} />
 
       {/* Protected routes */}
       <Route
@@ -114,6 +120,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <AgendaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leads"
+        element={
+          <ProtectedRoute>
+            <LeadsPage />
           </ProtectedRoute>
         }
       />

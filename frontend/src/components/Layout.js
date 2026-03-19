@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getSuivis } from '../services/api';
+import { getNewLeadsCount } from '../services/marketingApi';
 import { 
-  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus
+  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
@@ -13,15 +14,20 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [overdueCount, setOverdueCount] = useState(0);
+  const [newLeadsCount, setNewLeadsCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    loadOverdueCount();
+    loadCounts();
   }, [location.pathname]);
 
-  const loadOverdueCount = async () => {
+  const loadCounts = async () => {
     try {
-      const suivis = await getSuivis();
+      const [suivis, leadsCount] = await Promise.all([
+        getSuivis(),
+        getNewLeadsCount()
+      ]);
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const overdue = suivis.filter(c => {
@@ -30,8 +36,9 @@ const Layout = ({ children }) => {
         return suivi < today;
       });
       setOverdueCount(overdue.length);
+      setNewLeadsCount(leadsCount);
     } catch (error) {
-      console.error('Error loading overdue count:', error);
+      console.error('Error loading counts:', error);
     }
   };
 
@@ -43,7 +50,9 @@ const Layout = ({ children }) => {
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
     { path: '/clients', icon: Users, label: 'Clients' },
+    { path: '/leads', icon: UserPlus, label: 'Leads', badge: newLeadsCount },
     { path: '/agenda', icon: Calendar, label: 'Agenda', badge: overdueCount },
+    { path: '/profile', icon: Settings, label: 'Profil' },
   ];
 
   const isActive = (path) => {
