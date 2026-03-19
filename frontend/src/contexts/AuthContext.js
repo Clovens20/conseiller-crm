@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }) => {
     const userData = {
       id: users.id,
       email: users.email,
+      nom_complet: users.nom_complet || users.email.split('@')[0],
       created_at: users.created_at
     };
 
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (email, password) => {
+  const register = async (email, password, nomComplet) => {
     // Check if user exists
     const { data: existing } = await supabase
       .from('users')
@@ -74,7 +75,8 @@ export const AuthProvider = ({ children }) => {
       .from('users')
       .insert({
         email,
-        password_hash
+        password_hash,
+        nom_complet: nomComplet
       })
       .select()
       .single();
@@ -86,6 +88,7 @@ export const AuthProvider = ({ children }) => {
     const userData = {
       id: newUser.id,
       email: newUser.email,
+      nom_complet: newUser.nom_complet,
       created_at: newUser.created_at
     };
 
@@ -99,12 +102,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedData) => {
+    const newUserData = { ...user, ...updatedData };
+    localStorage.setItem('crm_user', JSON.stringify(newUserData));
+    setUser(newUserData);
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user
   };
 

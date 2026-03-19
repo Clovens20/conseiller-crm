@@ -5,12 +5,13 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
-import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, User } from 'lucide-react';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nomComplet, setNomComplet] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
 
@@ -23,11 +24,16 @@ const LoginPage = () => {
         await login(email, password);
         toast.success('Connexion réussie!');
       } else {
-        await register(email, password);
+        if (!nomComplet.trim()) {
+          toast.error('Le nom complet est requis');
+          setLoading(false);
+          return;
+        }
+        await register(email, password, nomComplet);
         toast.success('Compte créé avec succès!');
       }
     } catch (error) {
-      const message = error.response?.data?.detail || 'Une erreur est survenue';
+      const message = error.message || 'Une erreur est survenue';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -62,6 +68,24 @@ const LoginPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="nomComplet" className="text-slate-700">Nom complet</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        id="nomComplet"
+                        type="text"
+                        placeholder="Jean Tremblay"
+                        value={nomComplet}
+                        onChange={(e) => setNomComplet(e.target.value)}
+                        className="pl-10"
+                        required={!isLogin}
+                        data-testid="register-name-input"
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-slate-700">Courriel</Label>
                   <div className="relative">
@@ -120,7 +144,10 @@ const LoginPage = () => {
               <div className="mt-6 text-center">
                 <button
                   type="button"
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setNomComplet('');
+                  }}
                   className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
                   data-testid="toggle-auth-mode-btn"
                 >

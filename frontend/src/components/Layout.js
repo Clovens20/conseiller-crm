@@ -66,7 +66,7 @@ const Layout = ({ children }) => {
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-slate-900 text-white z-50 hidden md:flex flex-col">
         <div className="p-6 border-b border-slate-700">
           <h1 className="text-xl font-bold">Planify</h1>
-          <p className="text-sm text-slate-400 mt-1 truncate">{user?.email}</p>
+          <p className="text-sm text-slate-400 mt-1 truncate">{user?.nom_complet || user?.email}</p>
         </div>
         
         <nav className="flex-1 p-4">
@@ -120,7 +120,7 @@ const Layout = ({ children }) => {
           <SheetContent side="right" className="w-64 p-0">
             <div className="p-6 border-b">
               <h2 className="font-bold text-slate-900">Menu</h2>
-              <p className="text-sm text-slate-500 truncate">{user?.email}</p>
+              <p className="text-sm text-slate-500 truncate">{user?.nom_complet || user?.email}</p>
             </div>
             <nav className="p-4">
               <ul className="space-y-2">
