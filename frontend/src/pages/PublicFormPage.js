@@ -26,7 +26,8 @@ const PublicFormPage = () => {
     email: '',
     telephone: '',
     besoins: [],
-    details: ''
+    details: '',
+    veut_devenir_conseiller: false
   });
 
   const besoinKeys = [
@@ -98,7 +99,8 @@ const PublicFormPage = () => {
         telephone: formData.telephone,
         besoins: formData.besoins,
         details: formData.details || null,
-        langue: langue
+        langue: langue,
+        veut_devenir_conseiller: formData.veut_devenir_conseiller
       }, slug);
       
       setSubmitted(true);
@@ -273,6 +275,30 @@ const PublicFormPage = () => {
                   rows={4}
                   data-testid="form-details-input"
                 />
+              </div>
+
+              {/* Devenir Conseiller */}
+              <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="devenir-conseiller"
+                    checked={formData.veut_devenir_conseiller}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, veut_devenir_conseiller: checked }))}
+                    className="mt-1"
+                    data-testid="devenir-conseiller-checkbox"
+                  />
+                  <div>
+                    <label
+                      htmlFor="devenir-conseiller"
+                      className="text-sm font-medium text-amber-900 cursor-pointer"
+                    >
+                      {t.devenir_conseiller}
+                    </label>
+                    <p className="text-xs text-amber-700 mt-1">
+                      {t.devenir_conseiller_description}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Submit */}

@@ -18,6 +18,8 @@ export const translations = {
     success_message: "Votre demande a été envoyée avec succès. Votre conseiller vous contactera bientôt.",
     error_message: "Une erreur est survenue. Veuillez réessayer.",
     required: "Ce champ est requis",
+    devenir_conseiller: "Je souhaite devenir conseiller en finance personnelle",
+    devenir_conseiller_description: "Cochez cette case si vous êtes intéressé par une carrière de conseiller financier",
     besoins_options: {
       analyse_financiere: "Besoin d'une analyse financière",
       epargne: "Besoin de savoir comment épargner",
@@ -46,6 +48,8 @@ export const translations = {
     success_message: "Your request has been sent successfully. Your advisor will contact you soon.",
     error_message: "An error occurred. Please try again.",
     required: "This field is required",
+    devenir_conseiller: "I want to become a personal finance advisor",
+    devenir_conseiller_description: "Check this box if you are interested in a career as a financial advisor",
     besoins_options: {
       analyse_financiere: "Need a financial analysis",
       epargne: "Need to know how to save",
@@ -74,6 +78,8 @@ export const translations = {
     success_message: "Su solicitud ha sido enviada con éxito. Su asesor se pondrá en contacto pronto.",
     error_message: "Ocurrió un error. Por favor intente de nuevo.",
     required: "Este campo es requerido",
+    devenir_conseiller: "Quiero convertirme en asesor de finanzas personales",
+    devenir_conseiller_description: "Marque esta casilla si está interesado en una carrera como asesor financiero",
     besoins_options: {
       analyse_financiere: "Necesito un análisis financiero",
       epargne: "Necesito saber cómo ahorrar",
@@ -102,6 +108,8 @@ export const translations = {
     success_message: "Demann ou an voye avèk siksè. Konseye w la ap kontakte w byento.",
     error_message: "Yon erè rive. Tanpri eseye ankò.",
     required: "Chan sa a obligatwa",
+    devenir_conseiller: "Mwen vle vin yon konseye finans pèsonèl",
+    devenir_conseiller_description: "Tcheke bwat sa a si w enterese nan yon karyè kòm konseye finansye",
     besoins_options: {
       analyse_financiere: "Bezwen yon analiz finansye",
       epargne: "Bezwen konnen kijan pou m ekonomize",

@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { UserPlus, Trash2, Phone, Mail, Calendar, CheckCircle, Clock, Globe } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Calendar, CheckCircle, Clock, Globe, Briefcase } from 'lucide-react';
 import { languageNames } from '../utils/translations';
 
 const LeadsPage = () => {
@@ -170,6 +170,12 @@ const LeadsPage = () => {
                         <Globe className="h-3 w-3 mr-1" />
                         {languageNames[lead.langue] || lead.langue}
                       </Badge>
+                      {lead.veut_devenir_conseiller && (
+                        <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                          <Briefcase className="h-3 w-3 mr-1" />
+                          Veut devenir conseiller
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 mb-3">
