@@ -7,16 +7,9 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, CheckCircle, Send, Globe } from 'lucide-react';
-import { getTranslation, languageNames } from '../utils/translations';
+import { Loader2, CheckCircle, Send } from 'lucide-react';
+import { getTranslation } from '../utils/translations';
 
 const PublicFormPage = () => {
   const { slug } = useParams();
@@ -26,6 +19,7 @@ const PublicFormPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
   const [langue, setLangue] = useState('fr');
+  const [t, setT] = useState(getTranslation('fr'));
   
   const [formData, setFormData] = useState({
     nom_complet: '',
@@ -35,18 +29,35 @@ const PublicFormPage = () => {
     details: ''
   });
 
-  const t = getTranslation(langue);
+  const besoinKeys = [
+    'analyse_financiere',
+    'epargne',
+    'assurance_vie',
+    'liberte_financiere',
+    'ree_enfants',
+    'retour_impot',
+    'autre'
+  ];
 
   useEffect(() => {
     loadProfile();
   }, [slug]);
 
+  useEffect(() => {
+    // Update translations when language changes
+    setT(getTranslation(langue));
+    // Reset besoins when language changes to avoid mismatched labels
+    setFormData(prev => ({ ...prev, besoins: [] }));
+  }, [langue]);
+
   const loadProfile = async () => {
     try {
       const data = await getProfileBySlug(slug);
       setProfile(data);
-      setLangue(data.langue_defaut || 'fr');
-    } catch (error) {
+      const profileLangue = data.langue_defaut || 'fr';
+      setLangue(profileLangue);
+      setT(getTranslation(profileLangue));
+    } catch (err) {
       setError('Formulaire non trouvé');
     } finally {
       setLoading(false);
@@ -54,12 +65,17 @@ const PublicFormPage = () => {
   };
 
   const handleBesoinChange = (besoinKey, checked) => {
+    const besoinLabel = t.besoins_options[besoinKey];
     setFormData(prev => ({
       ...prev,
       besoins: checked 
-        ? [...prev.besoins, t.besoins_options[besoinKey]]
-        : prev.besoins.filter(b => b !== t.besoins_options[besoinKey])
+        ? [...prev.besoins, besoinLabel]
+        : prev.besoins.filter(b => b !== besoinLabel)
     }));
+  };
+
+  const isBesoinChecked = (besoinKey) => {
+    return formData.besoins.includes(t.besoins_options[besoinKey]);
   };
 
   const handleSubmit = async (e) => {
@@ -86,7 +102,7 @@ const PublicFormPage = () => {
       }, slug);
       
       setSubmitted(true);
-    } catch (error) {
+    } catch (err) {
       toast.error(t.error_message);
     } finally {
       setSubmitting(false);
@@ -146,16 +162,6 @@ const PublicFormPage = () => {
     );
   }
 
-  const besoinKeys = [
-    'analyse_financiere',
-    'epargne',
-    'assurance_vie',
-    'liberte_financiere',
-    'ree_enfants',
-    'retour_impot',
-    'autre'
-  ];
-
   return (
     <div 
       className="min-h-screen py-8 px-4"
@@ -182,21 +188,6 @@ const PublicFormPage = () => {
               {profile.message_accueil}
             </p>
           )}
-        </div>
-
-        {/* Language Selector */}
-        <div className="flex justify-end mb-4">
-          <Select value={langue} onValueChange={setLangue}>
-            <SelectTrigger className="w-40" data-testid="language-select">
-              <Globe className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(languageNames).map(([code, name]) => (
-                <SelectItem key={code} value={code}>{name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Form */}
@@ -256,7 +247,7 @@ const PublicFormPage = () => {
                     <div key={key} className="flex items-center space-x-3">
                       <Checkbox
                         id={`besoin-${key}`}
-                        checked={formData.besoins.includes(t.besoins_options[key])}
+                        checked={isBesoinChecked(key)}
                         onCheckedChange={(checked) => handleBesoinChange(key, checked)}
                         data-testid={`besoin-${key}`}
                       />
