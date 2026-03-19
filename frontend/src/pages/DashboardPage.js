@@ -117,7 +117,7 @@ const DashboardPage = () => {
         <Card className="border-slate-200">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-slate-900">
-              Bienvenue dans Conseiller Pro
+              Bienvenue dans Conseiller KonekteGroup
             </CardTitle>
           </CardHeader>
           <CardContent className="text-slate-600">

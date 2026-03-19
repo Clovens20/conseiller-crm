@@ -1,5 +1,5 @@
 import React from "react";
-import "@/index.css";
+import "./index.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "./components/ui/sonner";

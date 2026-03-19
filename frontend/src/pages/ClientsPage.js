@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getClients, deleteClient } from '../services/api';
+import { getClients, deleteClient, exportClientsCSV } from '../services/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent } from '../components/ui/card';
@@ -90,10 +90,13 @@ const ClientsPage = () => {
     }
   };
 
-  const handleExport = () => {
-    const token = localStorage.getItem('token');
-    const backendUrl = process.env.REACT_APP_BACKEND_URL;
-    window.location.href = `${backendUrl}/api/clients/export/csv?authorization=Bearer ${token}`;
+  const handleExport = async () => {
+    try {
+      await exportClientsCSV();
+      toast.success('Export CSV téléchargé');
+    } catch (error) {
+      toast.error('Erreur lors de l\'export');
+    }
   };
 
   return (

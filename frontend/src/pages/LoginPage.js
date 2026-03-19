@@ -41,7 +41,7 @@ const LoginPage = () => {
         <div className="w-full max-w-md animate-fade-in">
           <div className="mb-8 text-center md:text-left">
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
-              Conseiller Pro
+              Conseiller KonekteGroup
             </h1>
             <p className="text-slate-500">
               Votre CRM pour la gestion de clients en assurance

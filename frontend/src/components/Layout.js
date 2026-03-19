@@ -56,7 +56,7 @@ const Layout = ({ children }) => {
       {/* Desktop Sidebar */}
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-slate-900 text-white z-50 hidden md:flex flex-col">
         <div className="p-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold">Conseiller Pro</h1>
+          <h1 className="text-xl font-bold">Conseiller KonekteGroup</h1>
           <p className="text-sm text-slate-400 mt-1 truncate">{user?.email}</p>
         </div>
         
@@ -101,7 +101,7 @@ const Layout = ({ children }) => {
 
       {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-40 md:hidden flex items-center justify-between px-4">
-        <h1 className="text-lg font-bold text-slate-900">Conseiller Pro</h1>
+        <h1 className="text-lg font-bold text-slate-900">Conseiller KonekteGroup</h1>
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">

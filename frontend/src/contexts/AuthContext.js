@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { supabase } from '../lib/supabase';
+import bcrypt from 'bcryptjs';
 
 const AuthContext = createContext(null);
 
@@ -16,56 +14,93 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      if (token) {
-        try {
-          const response = await axios.get(`${API}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(response.data);
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
-          setToken(null);
-          setUser(null);
-        }
-      }
-      setLoading(false);
-    };
-    initAuth();
-  }, [token]);
+    // Check for existing session on mount
+    const storedUser = localStorage.getItem('crm_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
-    const { access_token, user: userData } = response.data;
-    localStorage.setItem('token', access_token);
-    setToken(access_token);
+    // Get user from database
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error || !users) {
+      throw new Error('Email ou mot de passe incorrect');
+    }
+
+    // Verify password
+    const isValid = await bcrypt.compare(password, users.password_hash);
+    if (!isValid) {
+      throw new Error('Email ou mot de passe incorrect');
+    }
+
+    const userData = {
+      id: users.id,
+      email: users.email,
+      created_at: users.created_at
+    };
+
+    localStorage.setItem('crm_user', JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
 
   const register = async (email, password) => {
-    const response = await axios.post(`${API}/auth/register`, { email, password });
-    const { access_token, user: userData } = response.data;
-    localStorage.setItem('token', access_token);
-    setToken(access_token);
+    // Check if user exists
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existing) {
+      throw new Error('Cet email est déjà utilisé');
+    }
+
+    // Hash password
+    const password_hash = await bcrypt.hash(password, 10);
+
+    // Create user
+    const { data: newUser, error } = await supabase
+      .from('users')
+      .insert({
+        email,
+        password_hash
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error('Erreur lors de la création du compte');
+    }
+
+    const userData = {
+      id: newUser.id,
+      email: newUser.email,
+      created_at: newUser.created_at
+    };
+
+    localStorage.setItem('crm_user', JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
+    localStorage.removeItem('crm_user');
     setUser(null);
   };
 
   const value = {
     user,
-    token,
     loading,
     login,
     register,
