@@ -199,6 +199,7 @@ const FormulaireEditPage = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
                   placeholder="Ex: Formulaire Assurance Vie"
                   required
+                  data-testid="formulaire-nom-input"
                 />
               </div>
               <div className="space-y-2">
@@ -211,6 +212,7 @@ const FormulaireEditPage = () => {
                     onChange={(e) => handleSlugChange(e.target.value)}
                     placeholder="mon-formulaire"
                     className={!slugAvailable ? 'border-red-500' : ''}
+                    data-testid="formulaire-slug-input"
                   />
                 </div>
                 {checkingSlug && <p className="text-sm text-slate-500">Vérification...</p>}
@@ -228,6 +230,7 @@ const FormulaireEditPage = () => {
                   value={formData.titre}
                   onChange={(e) => setFormData(prev => ({ ...prev, titre: e.target.value }))}
                   placeholder="Ex: Contactez-moi"
+                  data-testid="formulaire-titre-input"
                 />
               </div>
               <div className="space-y-2">
@@ -401,7 +404,7 @@ const FormulaireEditPage = () => {
           <Button type="button" variant="outline" onClick={() => navigate('/formulaires')}>
             Annuler
           </Button>
-          <Button type="submit" disabled={saving} className="bg-slate-900 hover:bg-slate-800">
+          <Button type="submit" disabled={saving} className="bg-slate-900 hover:bg-slate-800" data-testid="formulaire-submit-btn">
             {saving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
