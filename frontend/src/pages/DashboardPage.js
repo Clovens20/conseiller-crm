@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getStats } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Users, UserCheck, Calendar, Bell } from 'lucide-react';
@@ -153,8 +154,8 @@ const DashboardPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <a 
-                href="/clients/new" 
+              <Link 
+                to="/clients/new" 
                 className="block p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
                 data-testid="quick-add-client"
               >
@@ -167,9 +168,9 @@ const DashboardPage = () => {
                     <p className="text-sm text-slate-500">Créer une nouvelle fiche client</p>
                   </div>
                 </div>
-              </a>
-              <a 
-                href="/agenda" 
+              </Link>
+              <Link 
+                to="/agenda" 
                 className="block p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
                 data-testid="quick-view-agenda"
               >
@@ -182,7 +183,7 @@ const DashboardPage = () => {
                     <p className="text-sm text-slate-500">Consulter vos RDV et suivis</p>
                   </div>
                 </div>
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>
