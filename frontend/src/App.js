@@ -13,6 +13,8 @@ import AgendaPage from "./pages/AgendaPage";
 import ProfilePage from "./pages/ProfilePage";
 import LeadsPage from "./pages/LeadsPage";
 import PublicFormPage from "./pages/PublicFormPage";
+import FormulairesPage from "./pages/FormulairesPage";
+import FormulaireEditPage from "./pages/FormulaireEditPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -136,6 +138,30 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <LeadsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/formulaires"
+        element={
+          <ProtectedRoute>
+            <FormulairesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/formulaires/new"
+        element={
+          <ProtectedRoute>
+            <FormulaireEditPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/formulaires/:id/edit"
+        element={
+          <ProtectedRoute>
+            <FormulaireEditPage />
           </ProtectedRoute>
         }
       />

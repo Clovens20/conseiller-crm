@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getProfileBySlug, createLead } from '../services/marketingApi';
+import { getFormulaireBySlug, createLead } from '../services/marketingApi';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -8,12 +8,12 @@ import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, CheckCircle, Send } from 'lucide-react';
-import { getTranslation } from '../utils/translations';
+import { Loader2, CheckCircle, Send, Globe } from 'lucide-react';
+import { getTranslation, languageNames } from '../utils/translations';
 
 const PublicFormPage = () => {
   const { slug } = useParams();
-  const [profile, setProfile] = useState(null);
+  const [formulaire, setFormulaire] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -30,34 +30,22 @@ const PublicFormPage = () => {
     veut_devenir_conseiller: false
   });
 
-  const besoinKeys = [
-    'analyse_financiere',
-    'epargne',
-    'assurance_vie',
-    'liberte_financiere',
-    'ree_enfants',
-    'retour_impot',
-    'autre'
-  ];
-
   useEffect(() => {
-    loadProfile();
+    loadFormulaire();
   }, [slug]);
 
   useEffect(() => {
-    // Update translations when language changes
     setT(getTranslation(langue));
-    // Reset besoins when language changes to avoid mismatched labels
     setFormData(prev => ({ ...prev, besoins: [] }));
   }, [langue]);
 
-  const loadProfile = async () => {
+  const loadFormulaire = async () => {
     try {
-      const data = await getProfileBySlug(slug);
-      setProfile(data);
-      const profileLangue = data.langue_defaut || 'fr';
-      setLangue(profileLangue);
-      setT(getTranslation(profileLangue));
+      const data = await getFormulaireBySlug(slug);
+      setFormulaire(data);
+      const defaultLang = data.langues?.[0] || 'fr';
+      setLangue(defaultLang);
+      setT(getTranslation(defaultLang));
     } catch (err) {
       setError('Formulaire non trouvé');
     } finally {
@@ -65,18 +53,18 @@ const PublicFormPage = () => {
     }
   };
 
-  const handleBesoinChange = (besoinKey, checked) => {
-    const besoinLabel = t.besoins_options[besoinKey];
+  const handleBesoinChange = (besoin, checked) => {
     setFormData(prev => ({
       ...prev,
       besoins: checked 
-        ? [...prev.besoins, besoinLabel]
-        : prev.besoins.filter(b => b !== besoinLabel)
+        ? [...prev.besoins, besoin]
+        : prev.besoins.filter(b => b !== besoin)
     }));
   };
 
-  const isBesoinChecked = (besoinKey) => {
-    return formData.besoins.includes(t.besoins_options[besoinKey]);
+  const getBesoinLabel = (besoin) => {
+    const langKey = `label_${langue}`;
+    return besoin[langKey] || besoin.label_fr || '';
   };
 
   const handleSubmit = async (e) => {
@@ -128,7 +116,7 @@ const PublicFormPage = () => {
         <Card className="max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-bold text-slate-900 mb-2">Formulaire non trouvé</h2>
-            <p className="text-slate-500">Ce lien de formulaire n'existe pas ou a été supprimé.</p>
+            <p className="text-slate-500">Ce lien de formulaire n'existe pas ou a été désactivé.</p>
           </CardContent>
         </Card>
       </div>
@@ -139,17 +127,17 @@ const PublicFormPage = () => {
     return (
       <div 
         className="min-h-screen flex items-center justify-center p-4"
-        style={{ backgroundColor: profile?.couleur_primaire + '10' }}
+        style={{ backgroundColor: formulaire?.couleur_primaire + '10' }}
       >
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <div 
               className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: profile?.couleur_secondaire + '20' }}
+              style={{ backgroundColor: formulaire?.couleur_secondaire + '20' }}
             >
               <CheckCircle 
                 className="h-8 w-8" 
-                style={{ color: profile?.couleur_secondaire }}
+                style={{ color: formulaire?.couleur_secondaire }}
               />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">
@@ -164,37 +152,64 @@ const PublicFormPage = () => {
     );
   }
 
+  const availableLanguages = formulaire?.langues || ['fr'];
+  const besoins = formulaire?.besoins_personnalises || [];
+  const companyName = formulaire?.conseiller_profiles?.nom_compagnie || formulaire?.titre || 'Conseiller Financier';
+  const logoUrl = formulaire?.logo_url || formulaire?.conseiller_profiles?.logo_url;
+
   return (
     <div 
       className="min-h-screen py-8 px-4"
-      style={{ backgroundColor: profile?.couleur_primaire + '08' }}
+      style={{ backgroundColor: formulaire?.couleur_primaire + '08' }}
     >
       <div className="max-w-xl mx-auto">
+        {/* Language selector - only show if multiple languages */}
+        {availableLanguages.length > 1 && (
+          <div className="flex justify-end mb-4">
+            <div className="flex items-center gap-2 bg-white rounded-lg p-1 shadow-sm">
+              <Globe className="h-4 w-4 text-slate-400 ml-2" />
+              {availableLanguages.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setLangue(lang)}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                    langue === lang 
+                      ? 'bg-slate-900 text-white' 
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {languageNames[lang] || lang}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
-          {profile?.logo_url && (
+          {logoUrl && (
             <img 
-              src={profile.logo_url} 
-              alt={profile.nom_compagnie}
+              src={logoUrl} 
+              alt={companyName}
               className="h-16 mx-auto mb-4 object-contain"
             />
           )}
           <h1 
             className="text-3xl font-bold mb-2"
-            style={{ color: profile?.couleur_primaire }}
+            style={{ color: formulaire?.couleur_primaire }}
           >
-            {profile?.nom_compagnie || 'Conseiller Financier'}
+            {formulaire?.titre || companyName}
           </h1>
-          {profile?.message_accueil && (
+          {formulaire?.message_accueil && (
             <p className="text-slate-600 max-w-md mx-auto">
-              {profile.message_accueil}
+              {formulaire.message_accueil}
             </p>
           )}
         </div>
 
         {/* Form */}
         <Card className="shadow-lg">
-          <CardHeader style={{ borderBottom: `3px solid ${profile?.couleur_secondaire}` }}>
+          <CardHeader style={{ borderBottom: `3px solid ${formulaire?.couleur_secondaire}` }}>
             <CardTitle>{t.form_title}</CardTitle>
             <CardDescription>{t.form_subtitle}</CardDescription>
           </CardHeader>
@@ -240,29 +255,35 @@ const PublicFormPage = () => {
                 />
               </div>
 
-              {/* Besoins */}
-              <div className="space-y-3">
-                <Label>{t.besoins}</Label>
-                <p className="text-sm text-slate-500">{t.besoins_subtitle}</p>
+              {/* Besoins - Custom from formulaire */}
+              {besoins.length > 0 && (
                 <div className="space-y-3">
-                  {besoinKeys.map((key) => (
-                    <div key={key} className="flex items-center space-x-3">
-                      <Checkbox
-                        id={`besoin-${key}`}
-                        checked={isBesoinChecked(key)}
-                        onCheckedChange={(checked) => handleBesoinChange(key, checked)}
-                        data-testid={`besoin-${key}`}
-                      />
-                      <label
-                        htmlFor={`besoin-${key}`}
-                        className="text-sm text-slate-700 cursor-pointer"
-                      >
-                        {t.besoins_options[key]}
-                      </label>
-                    </div>
-                  ))}
+                  <Label>{t.besoins}</Label>
+                  <p className="text-sm text-slate-500">{t.besoins_subtitle}</p>
+                  <div className="space-y-3">
+                    {besoins.map((besoin, index) => {
+                      const label = getBesoinLabel(besoin);
+                      if (!label) return null;
+                      return (
+                        <div key={besoin.id || index} className="flex items-center space-x-3">
+                          <Checkbox
+                            id={`besoin-${besoin.id || index}`}
+                            checked={formData.besoins.includes(label)}
+                            onCheckedChange={(checked) => handleBesoinChange(label, checked)}
+                            data-testid={`besoin-${index}`}
+                          />
+                          <label
+                            htmlFor={`besoin-${besoin.id || index}`}
+                            className="text-sm text-slate-700 cursor-pointer"
+                          >
+                            {label}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Details */}
               <div className="space-y-2">
@@ -306,7 +327,7 @@ const PublicFormPage = () => {
                 type="submit"
                 disabled={submitting}
                 className="w-full"
-                style={{ backgroundColor: profile?.couleur_secondaire }}
+                style={{ backgroundColor: formulaire?.couleur_secondaire }}
                 data-testid="form-submit-btn"
               >
                 {submitting ? (

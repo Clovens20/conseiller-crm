@@ -1,37 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getProfile, createOrUpdateProfile, checkSlugAvailable } from '../services/marketingApi';
+import { getProfile, createOrUpdateProfile } from '../services/marketingApi';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
 import { toast } from 'sonner';
-import { Save, Loader2, Copy, ExternalLink, Building2, Palette, Globe, Link } from 'lucide-react';
-import { languageNames } from '../utils/translations';
+import { Save, Loader2, Building2, Palette, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [slugAvailable, setSlugAvailable] = useState(true);
-  const [checkingSlug, setCheckingSlug] = useState(false);
   
   const [formData, setFormData] = useState({
     nom_compagnie: '',
-    slug: '',
     logo_url: '',
     couleur_primaire: '#1e293b',
     couleur_secondaire: '#0ea5e9',
-    message_accueil: '',
-    langue_defaut: 'fr'
+    message_accueil: ''
   });
 
   useEffect(() => {
@@ -44,17 +34,11 @@ const ProfilePage = () => {
       if (data) {
         setFormData({
           nom_compagnie: data.nom_compagnie || '',
-          slug: data.slug || '',
           logo_url: data.logo_url || '',
           couleur_primaire: data.couleur_primaire || '#1e293b',
           couleur_secondaire: data.couleur_secondaire || '#0ea5e9',
-          message_accueil: data.message_accueil || '',
-          langue_defaut: data.langue_defaut || 'fr'
+          message_accueil: data.message_accueil || ''
         });
-      } else {
-        // Generate default slug from email
-        const emailSlug = user?.email?.split('@')[0]?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || '';
-        setFormData(prev => ({ ...prev, slug: emailSlug }));
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -63,35 +47,8 @@ const ProfilePage = () => {
     }
   };
 
-  const handleSlugChange = async (value) => {
-    const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    setFormData(prev => ({ ...prev, slug }));
-    
-    if (slug.length >= 3) {
-      setCheckingSlug(true);
-      try {
-        const available = await checkSlugAvailable(slug, user?.id);
-        setSlugAvailable(available);
-      } catch (error) {
-        console.error('Error checking slug:', error);
-      } finally {
-        setCheckingSlug(false);
-      }
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.slug || formData.slug.length < 3) {
-      toast.error('Le lien unique doit contenir au moins 3 caractères');
-      return;
-    }
-
-    if (!slugAvailable) {
-      toast.error('Ce lien unique est déjà pris');
-      return;
-    }
 
     setSaving(true);
     try {
@@ -103,13 +60,6 @@ const ProfilePage = () => {
     } finally {
       setSaving(false);
     }
-  };
-
-  const formUrl = formData.slug ? `${window.location.origin}/f/${formData.slug}` : '';
-
-  const copyFormUrl = () => {
-    navigator.clipboard.writeText(formUrl);
-    toast.success('Lien copié!');
   };
 
   if (loading) {
@@ -130,7 +80,7 @@ const ProfilePage = () => {
           Mon Profil
         </h1>
         <p className="text-slate-500 mt-1">
-          Configurez votre profil et votre formulaire marketing
+          Configurez votre profil d'entreprise
         </p>
       </div>
 
@@ -166,7 +116,7 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="message_accueil">Message d'accueil (optionnel)</Label>
+                <Label htmlFor="message_accueil">Message d'accueil par défaut (optionnel)</Label>
                 <Textarea
                   id="message_accueil"
                   value={formData.message_accueil}
@@ -179,83 +129,47 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
-          {/* Form Link */}
+          {/* Formulaires Link */}
           <Card className="border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Link className="h-5 w-5" />
-                Lien du formulaire
+                <FileText className="h-5 w-5" />
+                Mes Formulaires Marketing
               </CardTitle>
               <CardDescription>
-                Ce lien unique sera utilisé pour votre formulaire marketing
+                Créez et gérez vos formulaires de capture de leads
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="slug">Lien unique</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">/f/</span>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => handleSlugChange(e.target.value)}
-                    placeholder="mon-nom"
-                    className={!slugAvailable ? 'border-red-500' : ''}
-                    data-testid="slug-input"
-                  />
-                </div>
-                {checkingSlug && (
-                  <p className="text-sm text-slate-500">Vérification...</p>
-                )}
-                {!checkingSlug && formData.slug && !slugAvailable && (
-                  <p className="text-sm text-red-500">Ce lien est déjà pris</p>
-                )}
-                {!checkingSlug && formData.slug && slugAvailable && (
-                  <p className="text-sm text-green-600">Lien disponible!</p>
-                )}
-              </div>
-
-              {formData.slug && slugAvailable && (
-                <div className="p-4 bg-slate-50 rounded-lg space-y-2">
-                  <p className="text-sm font-medium text-slate-700">Votre lien de formulaire:</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 p-2 bg-white rounded border text-sm truncate">
-                      {formUrl}
-                    </code>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={copyFormUrl}
-                      data-testid="copy-url-btn"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => window.open(formUrl, '_blank')}
-                      data-testid="preview-form-btn"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <p className="text-sm text-slate-600">
+                Vous pouvez maintenant créer plusieurs formulaires marketing personnalisés, 
+                chacun avec son propre lien unique et ses propres options.
+              </p>
+              <Button 
+                type="button" 
+                onClick={() => navigate('/formulaires')}
+                className="w-full"
+                data-testid="go-to-formulaires-btn"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Gérer mes formulaires
+              </Button>
             </CardContent>
           </Card>
 
           {/* Customization */}
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Personnalisation
+                Couleurs par défaut
               </CardTitle>
+              <CardDescription>
+                Ces couleurs seront utilisées par défaut lors de la création de nouveaux formulaires
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="couleur_primaire">Couleur primaire</Label>
                   <div className="flex items-center gap-2">
@@ -313,41 +227,13 @@ const ProfilePage = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Language */}
-          <Card className="border-slate-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Langue par défaut
-              </CardTitle>
-              <CardDescription>
-                Choisissez la langue par défaut de votre formulaire
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select 
-                value={formData.langue_defaut} 
-                onValueChange={(v) => setFormData(prev => ({ ...prev, langue_defaut: v }))}
-              >
-                <SelectTrigger data-testid="langue-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(languageNames).map(([code, name]) => (
-                    <SelectItem key={code} value={code}>{name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Submit */}
         <div className="mt-6 flex justify-end">
           <Button 
             type="submit" 
-            disabled={saving || !slugAvailable}
+            disabled={saving}
             className="bg-slate-900 hover:bg-slate-800"
             data-testid="save-profile-btn"
           >

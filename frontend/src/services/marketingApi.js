@@ -27,7 +27,6 @@ export const createOrUpdateProfile = async (profileData) => {
   const userId = getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
-  // Check if profile exists
   const { data: existing } = await supabase
     .from('conseiller_profiles')
     .select('id')
@@ -39,61 +38,144 @@ export const createOrUpdateProfile = async (profileData) => {
   if (existing) {
     const { data, error } = await supabase
       .from('conseiller_profiles')
-      .update({
-        ...profileData,
-        updated_at: now
-      })
+      .update({ ...profileData, updated_at: now })
       .eq('user_id', userId)
       .select()
       .single();
-
     if (error) throw error;
     return data;
   } else {
     const { data, error } = await supabase
       .from('conseiller_profiles')
-      .insert({
-        ...profileData,
-        user_id: userId,
-        created_at: now,
-        updated_at: now
-      })
+      .insert({ ...profileData, user_id: userId, created_at: now, updated_at: now })
       .select()
       .single();
-
     if (error) throw error;
     return data;
   }
 };
 
-export const checkSlugAvailable = async (slug, currentUserId = null) => {
-  let query = supabase
-    .from('conseiller_profiles')
-    .select('id, user_id')
-    .eq('slug', slug);
+// ============ Formulaires ============
 
-  const { data, error } = await query;
-  
+export const getFormulaires = async () => {
+  const userId = getCurrentUserId();
+  if (!userId) throw new Error('Non authentifié');
+
+  const { data, error } = await supabase
+    .from('formulaires')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
   if (error) throw error;
-  
-  // Si pas de résultat, le slug est disponible
-  if (!data || data.length === 0) return true;
-  
-  // Si le slug appartient à l'utilisateur actuel, c'est ok
-  if (currentUserId && data[0].user_id === currentUserId) return true;
-  
-  return false;
+  return data || [];
 };
 
-export const getProfileBySlug = async (slug) => {
+export const getFormulaire = async (id) => {
+  const userId = getCurrentUserId();
+  if (!userId) throw new Error('Non authentifié');
+
   const { data, error } = await supabase
-    .from('conseiller_profiles')
-    .select('*, users(email)')
-    .eq('slug', slug)
+    .from('formulaires')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', userId)
     .single();
 
   if (error) throw error;
   return data;
+};
+
+export const getFormulaireBySlug = async (slug) => {
+  // First get the formulaire
+  const { data: formulaire, error } = await supabase
+    .from('formulaires')
+    .select('*')
+    .eq('slug', slug)
+    .eq('actif', true)
+    .single();
+
+  if (error) throw error;
+
+  // Then get the conseiller profile separately
+  const { data: profile } = await supabase
+    .from('conseiller_profiles')
+    .select('nom_compagnie, logo_url')
+    .eq('user_id', formulaire.user_id)
+    .single();
+
+  return {
+    ...formulaire,
+    conseiller_profiles: profile || null
+  };
+};
+
+export const createFormulaire = async (formulaireData) => {
+  const userId = getCurrentUserId();
+  if (!userId) throw new Error('Non authentifié');
+
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('formulaires')
+    .insert({
+      ...formulaireData,
+      user_id: userId,
+      created_at: now,
+      updated_at: now
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateFormulaire = async (id, formulaireData) => {
+  const userId = getCurrentUserId();
+  if (!userId) throw new Error('Non authentifié');
+
+  const { data, error } = await supabase
+    .from('formulaires')
+    .update({
+      ...formulaireData,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteFormulaire = async (id) => {
+  const userId = getCurrentUserId();
+  if (!userId) throw new Error('Non authentifié');
+
+  const { error } = await supabase
+    .from('formulaires')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) throw error;
+  return { message: 'Formulaire supprimé' };
+};
+
+export const checkFormulaireSlugAvailable = async (slug, excludeId = null) => {
+  let query = supabase
+    .from('formulaires')
+    .select('id')
+    .eq('slug', slug);
+
+  if (excludeId) {
+    query = query.neq('id', excludeId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return !data || data.length === 0;
 };
 
 // ============ Leads ============
@@ -104,7 +186,7 @@ export const getLeads = async () => {
 
   const { data, error } = await supabase
     .from('leads')
-    .select('*')
+    .select('*, formulaires(nom)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -127,20 +209,21 @@ export const getNewLeadsCount = async () => {
 };
 
 export const createLead = async (leadData, slug) => {
-  // Get user_id from slug
-  const { data: profile, error: profileError } = await supabase
-    .from('conseiller_profiles')
-    .select('user_id')
+  // Get formulaire and user_id from slug
+  const { data: formulaire, error: formError } = await supabase
+    .from('formulaires')
+    .select('id, user_id')
     .eq('slug', slug)
     .single();
 
-  if (profileError || !profile) throw new Error('Conseiller non trouvé');
+  if (formError || !formulaire) throw new Error('Formulaire non trouvé');
 
   const { data, error } = await supabase
     .from('leads')
     .insert({
       ...leadData,
-      user_id: profile.user_id,
+      user_id: formulaire.user_id,
+      formulaire_id: formulaire.id,
       converti: false,
       created_at: new Date().toISOString()
     })
@@ -155,7 +238,6 @@ export const convertLeadToClient = async (leadId) => {
   const userId = getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
-  // Get lead data
   const { data: lead, error: leadError } = await supabase
     .from('leads')
     .select('*')
@@ -165,7 +247,6 @@ export const convertLeadToClient = async (leadId) => {
 
   if (leadError || !lead) throw new Error('Lead non trouvé');
 
-  // Create client from lead
   const now = new Date().toISOString();
   const nameParts = lead.nom_complet.split(' ');
   const prenom = nameParts[0] || '';
@@ -180,7 +261,7 @@ export const convertLeadToClient = async (leadId) => {
       telephone: lead.telephone,
       courriel: lead.email,
       statut: 'prospect',
-      notes: `<p><strong>Besoins exprimés:</strong></p><ul>${(lead.besoins || []).map(b => `<li>${b}</li>`).join('')}</ul>${lead.details ? `<p><strong>Détails:</strong> ${lead.details}</p>` : ''}`,
+      notes: `<p><strong>Besoins exprimés:</strong></p><ul>${(lead.besoins || []).map(b => `<li>${b}</li>`).join('')}</ul>${lead.details ? `<p><strong>Détails:</strong> ${lead.details}</p>` : ''}${lead.veut_devenir_conseiller ? '<p><strong>⭐ Veut devenir conseiller</strong></p>' : ''}`,
       source: 'Formulaire marketing',
       created_at: now,
       updated_at: now
@@ -190,16 +271,10 @@ export const convertLeadToClient = async (leadId) => {
 
   if (clientError) throw clientError;
 
-  // Update lead as converted
-  const { error: updateError } = await supabase
+  await supabase
     .from('leads')
-    .update({
-      converti: true,
-      client_id: client.id
-    })
+    .update({ converti: true, client_id: client.id })
     .eq('id', leadId);
-
-  if (updateError) throw updateError;
 
   return client;
 };

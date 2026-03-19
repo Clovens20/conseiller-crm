@@ -1,0 +1,138 @@
+{
+  "summary": "Code review completed for Marketing Forms feature. Frontend is running locally (confirmed via curl 200 response). External preview URL is unavailable due to infrastructure inactivity - unable to perform UI testing. All code lints successfully with no errors.",
+  
+  "backend_issues": {
+    "note": "No backend testing requested - frontend-only architecture using Supabase directly"
+  },
+
+  "frontend_issues": {
+    "critical": [],
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "infrastructure_issues": [
+      {
+        "issue": "External preview URL unavailable",
+        "details": "Preview environment shows 'Preview Unavailable!!! Our Agent is resting after inactivity' - unable to perform UI testing",
+        "affected_url": "https://weknjgueghcmevnqmdgr-frontend.preview.emergentagent.com",
+        "priority": "BLOCKER for UI testing"
+      }
+    ]
+  },
+
+  "code_review_findings": {
+    "files_reviewed": [
+      "/app/frontend/src/pages/FormulairesPage.js",
+      "/app/frontend/src/pages/FormulaireEditPage.js", 
+      "/app/frontend/src/pages/PublicFormPage.js",
+      "/app/frontend/src/services/marketingApi.js",
+      "/app/frontend/src/App.js",
+      "/app/frontend/src/components/Layout.js",
+      "/app/frontend/src/utils/translations.js"
+    ],
+    "lint_status": "ALL PASS - No linting errors in any reviewed files",
+    "routing_status": "CORRECT - Routes defined: /formulaires, /formulaires/new, /formulaires/:id/edit, /f/:slug",
+    "navigation_status": "CORRECT - 'Formulaires' link added to Layout.js nav items with FileText icon",
+    "supabase_integration": "CORRECT - API functions properly use Supabase client for CRUD operations",
+    "translations": "COMPLETE - All 4 languages implemented (fr, en, es, ht) in translations.js",
+    "data_testid_attributes": {
+      "FormulairesPage": ["create-formulaire-btn"],
+      "PublicFormPage": ["form-nom-input", "form-email-input", "form-telephone-input", "form-details-input", "devenir-conseiller-checkbox", "form-submit-btn", "besoin-{index}"],
+      "ProfilePage": ["nom-compagnie-input", "logo-url-input", "message-accueil-input", "go-to-formulaires-btn", "save-profile-btn"],
+      "Layout": ["nav-formulaires"]
+    }
+  },
+
+  "features_verified_via_code_review": [
+    {
+      "feature": "/formulaires page - Liste des formulaires",
+      "status": "CODE COMPLETE",
+      "notes": "Displays list of forms with buttons for copy URL, preview, edit, delete"
+    },
+    {
+      "feature": "/formulaires/new - Création de formulaire",
+      "status": "CODE COMPLETE", 
+      "notes": "Form includes: nom, slug, titre, message_accueil, langues (checkbox), couleurs, besoins_personnalises"
+    },
+    {
+      "feature": "/formulaires/:id/edit - Modification de formulaire",
+      "status": "CODE COMPLETE",
+      "notes": "Same component as creation with isEdit flag"
+    },
+    {
+      "feature": "Navigation - Lien Formulaires",
+      "status": "CODE COMPLETE",
+      "notes": "FileText icon with 'Formulaires' label at path /formulaires"
+    },
+    {
+      "feature": "/f/:slug - Formulaire public dynamique",
+      "status": "CODE COMPLETE",
+      "notes": "Loads form by slug, shows language selector if multiple languages, renders custom besoins"
+    },
+    {
+      "feature": "Sélecteur de langue",
+      "status": "CODE COMPLETE",
+      "notes": "Shows only when availableLanguages.length > 1"
+    },
+    {
+      "feature": "Soumission de lead",
+      "status": "CODE COMPLETE",
+      "notes": "createLead function submits to Supabase leads table with formulaire_id"
+    }
+  ],
+
+  "potential_issues_detected": [
+    {
+      "location": "FormulaireEditPage.js line 49",
+      "issue": "eslint warning - React Hook useEffect has missing dependencies: 'isEdit' and 'loadFormulaire'",
+      "severity": "WARNING",
+      "impact": "May cause stale closure issues but likely works as intended"
+    },
+    {
+      "location": "PublicFormPage.js line 35",
+      "issue": "eslint warning - React Hook useEffect has a missing dependency: 'loadFormulaire'",
+      "severity": "WARNING", 
+      "impact": "May cause stale closure issues but likely works as intended"
+    },
+    {
+      "location": "PublicFormPage.js",
+      "issue": "No error boundary - if Supabase query fails for invalid slug, shows generic 'Formulaire non trouvé' message",
+      "severity": "LOW",
+      "impact": "User experience could be improved with more detailed error messages"
+    }
+  ],
+
+  "test_report_links": [],
+  
+  "action_items": [
+    "BLOCKER: External preview URL is unavailable - need to wake up the preview environment at app.emergent.sh before UI testing can proceed",
+    "Fix eslint warnings in FormulaireEditPage.js and PublicFormPage.js by adding dependencies to useEffect or using useCallback",
+    "Add data-testid to FormulaireEditPage form fields for better testability"
+  ],
+
+  "critical_code_review_comments": [
+    "Missing data-testid on FormulaireEditPage form inputs (nom, slug, titre, etc.) - should add for automated testing",
+    "FormulaireEditPage uses defaultBesoins hardcoded - this is fine as design decision but besoins_personnalises should persist properly"
+  ],
+
+  "updated_files": [],
+  
+  "success_rate": {
+    "backend": "N/A - Frontend-only architecture",
+    "frontend_code_review": "100% - All code lints, routes properly configured, navigation updated",
+    "frontend_ui_testing": "0% - Unable to test due to preview environment unavailable"
+  },
+
+  "test_credentials": "N/A - Requires Supabase user account creation via /login page",
+  "seed_data_creation": "None - Supabase direct integration requires users table with users",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "External preview environment is unavailable (showing 'Preview Unavailable' message). Frontend is running correctly internally (curl localhost:3000 returns 200). All code for marketing forms feature is complete and lints without errors. Need to wake up preview at app.emergent.sh before UI testing can proceed. Key features to test: /formulaires page, form creation at /formulaires/new, public form at /f/{slug}, language switching, lead submission.",
+
+  "environment_status": {
+    "frontend_internal": "RUNNING - 200 response from localhost:3000",
+    "frontend_external": "UNAVAILABLE - Preview environment sleeping",
+    "supervisor_status": "frontend RUNNING, backend RUNNING"
+  }
+}

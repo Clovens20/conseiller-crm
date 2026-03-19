@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getSuivis } from '../services/api';
 import { getNewLeadsCount } from '../services/marketingApi';
 import { 
-  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings
+  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings, FileText
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
@@ -52,6 +52,7 @@ const Layout = ({ children }) => {
     { path: '/clients', icon: Users, label: 'Clients' },
     { path: '/leads', icon: UserPlus, label: 'Leads', badge: newLeadsCount },
     { path: '/agenda', icon: Calendar, label: 'Agenda', badge: overdueCount },
+    { path: '/formulaires', icon: FileText, label: 'Formulaires' },
     { path: '/profile', icon: Settings, label: 'Profil' },
   ];
 
