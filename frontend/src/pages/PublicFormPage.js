@@ -310,7 +310,7 @@ const PublicFormPage = () => {
 
         {/* Footer */}
         <p className="text-center text-sm text-slate-400 mt-6">
-          Propulsé par Conseiller KonekteGroup
+          Propulsé par Planify
         </p>
       </div>
     </div>
