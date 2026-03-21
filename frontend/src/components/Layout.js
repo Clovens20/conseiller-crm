@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getSuivis } from '../services/api';
 import { getNewLeadsCount } from '../services/marketingApi';
 import { 
-  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings, FileText
+  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings, FileText, BookUser
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
@@ -38,7 +38,7 @@ const Layout = ({ children }) => {
       setOverdueCount(overdue.length);
       setNewLeadsCount(leadsCount);
     } catch (error) {
-      console.error('Error loading counts:', error);
+      // Keep UI resilient; counts already default to 0.
     }
   };
 
@@ -51,6 +51,7 @@ const Layout = ({ children }) => {
     { path: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
     { path: '/clients', icon: Users, label: 'Clients' },
     { path: '/leads', icon: UserPlus, label: 'Leads', badge: newLeadsCount },
+    { path: '/contacts', icon: BookUser, label: 'Contacts' }, // ← NOUVEAU
     { path: '/agenda', icon: Calendar, label: 'Agenda', badge: overdueCount },
     { path: '/formulaires', icon: FileText, label: 'Formulaires' },
     { path: '/profile', icon: Settings, label: 'Profil' },

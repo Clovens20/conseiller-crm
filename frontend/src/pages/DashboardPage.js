@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { getStats } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Users, UserCheck, Calendar, Bell } from 'lucide-react';
-import { toast } from 'sonner';
 
 const DashboardPage = () => {
   const [stats, setStats] = useState({
@@ -23,7 +22,13 @@ const DashboardPage = () => {
       const data = await getStats();
       setStats(data);
     } catch (error) {
-      toast.error('Erreur lors du chargement des statistiques');
+      console.error('Dashboard loadStats error:', error);
+      setStats({
+        total_clients: 0,
+        total_prospects: 0,
+        rdv_this_month: 0,
+        suivis_pending: 0
+      });
     } finally {
       setLoading(false);
     }

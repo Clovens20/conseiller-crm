@@ -1,16 +1,14 @@
 import { supabase } from '../lib/supabase';
 
-// Get current user from localStorage
-const getCurrentUserId = () => {
-  const user = localStorage.getItem('crm_user');
-  if (!user) return null;
-  return JSON.parse(user).id;
+const getCurrentUserId = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id || null;
 };
 
 // ============ Conseiller Profile ============
 
 export const getProfile = async () => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data, error } = await supabase
@@ -24,7 +22,7 @@ export const getProfile = async () => {
 };
 
 export const createOrUpdateProfile = async (profileData) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data: existing } = await supabase
@@ -58,7 +56,7 @@ export const createOrUpdateProfile = async (profileData) => {
 // ============ Formulaires ============
 
 export const getFormulaires = async () => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data, error } = await supabase
@@ -72,7 +70,7 @@ export const getFormulaires = async () => {
 };
 
 export const getFormulaire = async (id) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data, error } = await supabase
@@ -111,7 +109,7 @@ export const getFormulaireBySlug = async (slug) => {
 };
 
 export const createFormulaire = async (formulaireData) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const now = new Date().toISOString();
@@ -131,7 +129,7 @@ export const createFormulaire = async (formulaireData) => {
 };
 
 export const updateFormulaire = async (id, formulaireData) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data, error } = await supabase
@@ -150,7 +148,7 @@ export const updateFormulaire = async (id, formulaireData) => {
 };
 
 export const deleteFormulaire = async (id) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { error } = await supabase
@@ -181,31 +179,43 @@ export const checkFormulaireSlugAvailable = async (slug, excludeId = null) => {
 // ============ Leads ============
 
 export const getLeads = async () => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
-  const { data, error } = await supabase
-    .from('leads')
-    .select('*, formulaires(nom)')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*, formulaires(nom)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+    if (error) {
+      return [];
+    }
+    return data || [];
+  } catch {
+    return [];
+  }
 };
 
 export const getNewLeadsCount = async () => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) return 0;
 
-  const { data, error } = await supabase
-    .from('leads')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('converti', false);
+  try {
+    const { data, error } = await supabase
+      .from('leads')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('converti', false);
 
-  if (error) return 0;
-  return data?.length || 0;
+    if (error) {
+      return 0;
+    }
+    return data?.length || 0;
+  } catch {
+    return 0;
+  }
 };
 
 export const createLead = async (leadData, slug) => {
@@ -235,7 +245,7 @@ export const createLead = async (leadData, slug) => {
 };
 
 export const convertLeadToClient = async (leadId) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data: lead, error: leadError } = await supabase
@@ -280,7 +290,7 @@ export const convertLeadToClient = async (leadId) => {
 };
 
 export const deleteLead = async (leadId) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { error } = await supabase

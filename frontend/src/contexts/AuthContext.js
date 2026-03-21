@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import bcrypt from 'bcryptjs';
 
 const AuthContext = createContext(null);
 
@@ -17,94 +16,88 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on mount
-    const storedUser = localStorage.getItem('crm_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const bootstrapAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user || null;
+      setUser(currentUser ? mapSupabaseUser(currentUser) : null);
+      setLoading(false);
+    };
+
+    bootstrapAuth();
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user || null;
+      setUser(currentUser ? mapSupabaseUser(currentUser) : null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    // Get user from database
-    const { data: users, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
-    if (error || !users) {
-      throw new Error('Email ou mot de passe incorrect');
+    if (error || !data?.user) {
+      throw new Error(error?.message || 'Email ou mot de passe incorrect');
     }
 
-    // Verify password
-    const isValid = await bcrypt.compare(password, users.password_hash);
-    if (!isValid) {
-      throw new Error('Email ou mot de passe incorrect');
-    }
-
-    const userData = {
-      id: users.id,
-      email: users.email,
-      nom_complet: users.nom_complet || users.email.split('@')[0],
-      created_at: users.created_at
-    };
-
-    localStorage.setItem('crm_user', JSON.stringify(userData));
+    const userData = mapSupabaseUser(data.user);
     setUser(userData);
     return userData;
   };
 
   const register = async (email, password, nomComplet) => {
-    // Check if user exists
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single();
-
-    if (existing) {
-      throw new Error('Cet email est déjà utilisé');
-    }
-
-    // Hash password
-    const password_hash = await bcrypt.hash(password, 10);
-
-    // Create user
-    const { data: newUser, error } = await supabase
-      .from('users')
-      .insert({
-        email,
-        password_hash,
-        nom_complet: nomComplet
-      })
-      .select()
-      .single();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nom_complet: nomComplet
+        }
+      }
+    });
 
     if (error) {
-      throw new Error('Erreur lors de la création du compte');
+      throw new Error(error.message || 'Erreur lors de la création du compte');
     }
 
-    const userData = {
-      id: newUser.id,
-      email: newUser.email,
-      nom_complet: newUser.nom_complet,
-      created_at: newUser.created_at
-    };
+    if (!data?.user) {
+      throw new Error('Compte créé, veuillez vérifier votre email pour activer le compte');
+    }
 
-    localStorage.setItem('crm_user', JSON.stringify(userData));
+    const userData = mapSupabaseUser(data.user);
+
+    // Keep this profile table in sync with auth metadata.
+    const { error: profileError } = await supabase
+      .from('conseiller_profiles')
+      .upsert({
+        user_id: data.user.id,
+        email,
+        nom_complet: nomComplet
+      })
+      .select('user_id')
+      .single();
+
+    if (profileError && profileError.code !== '42501') {
+      throw profileError;
+    }
+
     setUser(userData);
     return userData;
   };
 
-  const logout = () => {
-    localStorage.removeItem('crm_user');
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
   };
 
   const updateUser = (updatedData) => {
-    const newUserData = { ...user, ...updatedData };
-    localStorage.setItem('crm_user', JSON.stringify(newUserData));
+    const newUserData = { ...(user || {}), ...updatedData };
     setUser(newUserData);
   };
 
@@ -126,3 +119,10 @@ export const AuthProvider = ({ children }) => {
 };
 
 export default AuthContext;
+
+const mapSupabaseUser = (authUser) => ({
+  id: authUser.id,
+  email: authUser.email,
+  nom_complet: authUser.user_metadata?.nom_complet || authUser.email?.split('@')[0] || '',
+  created_at: authUser.created_at
+});

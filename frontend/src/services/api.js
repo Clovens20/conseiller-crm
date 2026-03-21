@@ -1,33 +1,55 @@
 import { supabase } from '../lib/supabase';
 
-// Get current user from localStorage
-const getCurrentUserId = () => {
-  const user = localStorage.getItem('crm_user');
-  if (!user) return null;
-  return JSON.parse(user).id;
+const getCurrentUserId = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id || null;
 };
 
 // Stats
 export const getStats = async () => {
-  const userId = getCurrentUserId();
-  if (!userId) throw new Error('Non authentifié');
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return {
+      total_clients: 0,
+      total_prospects: 0,
+      rdv_this_month: 0,
+      suivis_pending: 0
+    };
+  }
+  let clients = [];
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', userId);
 
-  const { data: clients, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('user_id', userId);
+    if (error) {
+      return {
+        total_clients: 0,
+        total_prospects: 0,
+        rdv_this_month: 0,
+        suivis_pending: 0
+      };
+    }
+    clients = data || [];
+  } catch {
+    return {
+      total_clients: 0,
+      total_prospects: 0,
+      rdv_this_month: 0,
+      suivis_pending: 0
+    };
+  }
 
-  if (error) throw error;
-
-  const total_clients = clients?.length || 0;
-  const total_prospects = clients?.filter(c => c.statut === 'prospect').length || 0;
+  const total_clients = clients.length;
+  const total_prospects = clients.filter(c => c.statut === 'prospect').length;
 
   // RDV this month
   const now = new Date();
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-  const rdv_this_month = clients?.filter(c => {
+  const rdv_this_month = clients.filter(c => {
     if (!c.date_rdv) return false;
     const rdvDate = new Date(c.date_rdv);
     return rdvDate >= firstDay && rdvDate <= lastDay;
@@ -37,7 +59,7 @@ export const getStats = async () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const suivis_pending = clients?.filter(c => {
+  const suivis_pending = clients.filter(c => {
     if (!c.date_suivi || c.statut === 'ferme') return false;
     const suiviDate = new Date(c.date_suivi);
     return suiviDate <= today;
@@ -53,7 +75,7 @@ export const getStats = async () => {
 
 // Clients
 export const getClients = async (search = '', statut = '') => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   let query = supabase
@@ -86,7 +108,7 @@ export const getClients = async (search = '', statut = '') => {
 };
 
 export const getClient = async (id) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data, error } = await supabase
@@ -101,7 +123,7 @@ export const getClient = async (id) => {
 };
 
 export const createClient = async (clientData) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const now = new Date().toISOString();
@@ -123,7 +145,7 @@ export const createClient = async (clientData) => {
 };
 
 export const updateClient = async (id, clientData) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data, error } = await supabase
@@ -142,7 +164,7 @@ export const updateClient = async (id, clientData) => {
 };
 
 export const deleteClient = async (id) => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { error } = await supabase
@@ -157,39 +179,51 @@ export const deleteClient = async (id) => {
 
 // Agenda
 export const getRdv = async () => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('user_id', userId)
-    .not('date_rdv', 'is', null)
-    .order('date_rdv', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', userId)
+      .not('date_rdv', 'is', null)
+      .order('date_rdv', { ascending: true });
 
-  if (error) throw error;
-  return data || [];
+    if (error) {
+      return [];
+    }
+    return data || [];
+  } catch {
+    return [];
+  }
 };
 
 export const getSuivis = async () => {
-  const userId = getCurrentUserId();
-  if (!userId) throw new Error('Non authentifié');
+  const userId = await getCurrentUserId();
+  if (!userId) return [];
 
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('user_id', userId)
-    .not('date_suivi', 'is', null)
-    .neq('statut', 'ferme')
-    .order('date_suivi', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', userId)
+      .not('date_suivi', 'is', null)
+      .neq('statut', 'ferme')
+      .order('date_suivi', { ascending: true });
 
-  if (error) throw error;
-  return data || [];
+    if (error) {
+      return [];
+    }
+    return data || [];
+  } catch {
+    return [];
+  }
 };
 
 // Export CSV
 export const exportClientsCSV = async () => {
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error('Non authentifié');
 
   const { data: clients, error } = await supabase
