@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Checkbox } from '../components/ui/checkbox';
 import { Switch } from '../components/ui/switch';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2, Plus, Trash2, GripVertical } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, Trash2, GripVertical, Copy, Check, ImageOff } from 'lucide-react';
 import { languageNames } from '../utils/translations';
+import RichTextEditor from '../components/RichTextEditor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 
 const defaultBesoins = [
   { id: '1', label_fr: "Besoin d'une analyse financière", label_en: "Need a financial analysis", label_es: "Necesito un análisis financiero", label_ht: "Bezwen yon analiz finansye" },
@@ -30,12 +32,30 @@ const FormulaireEditPage = () => {
   const [saving, setSaving] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState(true);
   const [checkingSlug, setCheckingSlug] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!formData.slug) return;
+    const fullUrl = `${window.location.origin}/f/${formData.slug}`;
+    navigator.clipboard.writeText(fullUrl);
+    setCopied(true);
+    toast.success('Lien copié !');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const [logoError, setLogoError] = useState(false);
 
   const [formData, setFormData] = useState({
     nom: '',
     slug: '',
     titre: '',
+    titre_en: '',
+    titre_es: '',
+    titre_ht: '',
     message_accueil: '',
+    message_accueil_en: '',
+    message_accueil_es: '',
+    message_accueil_ht: '',
     couleur_primaire: '#1e293b',
     couleur_secondaire: '#0ea5e9',
     logo_url: '',
@@ -55,7 +75,13 @@ const FormulaireEditPage = () => {
         nom: data.nom || '',
         slug: data.slug || '',
         titre: data.titre || '',
+        titre_en: data.titre_en || '',
+        titre_es: data.titre_es || '',
+        titre_ht: data.titre_ht || '',
         message_accueil: data.message_accueil || '',
+        message_accueil_en: data.message_accueil_en || '',
+        message_accueil_es: data.message_accueil_es || '',
+        message_accueil_ht: data.message_accueil_ht || '',
         couleur_primaire: data.couleur_primaire || '#1e293b',
         couleur_secondaire: data.couleur_secondaire || '#0ea5e9',
         logo_url: data.logo_url || '',
@@ -72,7 +98,12 @@ const FormulaireEditPage = () => {
   };
 
   const handleSlugChange = async (value) => {
-    const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const slug = value
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^a-z0-9-]/g, '')     // Remove non-alphanumeric except -
+      .replace(/-+/g, '-');           // Replace multiple - with single -
     setFormData(prev => ({ ...prev, slug }));
     
     if (slug.length >= 3) {
@@ -155,7 +186,8 @@ const FormulaireEditPage = () => {
       }
       navigate('/formulaires');
     } catch (error) {
-      toast.error('Erreur lors de l\'enregistrement');
+      console.error('Erreur enregistrement formulaire:', error);
+      toast.error(error.message || 'Erreur lors de l’enregistrement');
     } finally {
       setSaving(false);
     }
@@ -196,7 +228,14 @@ const FormulaireEditPage = () => {
                 <Input
                   id="nom"
                   value={formData.nom}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
+                  onChange={(e) => {
+                    const newNom = e.target.value;
+                    setFormData(prev => ({ ...prev, nom: newNom }));
+                    // Auto-slug only if slug is empty or we're in create mode and it looks like it was auto-generated
+                    if (!isEdit && (!formData.slug || formData.slug === formData.nom.toLowerCase().replace(/[^a-z0-9-]/g, ''))) {
+                      handleSlugChange(newNom);
+                    }
+                  }}
                   placeholder="Ex: Formulaire Assurance Vie"
                   required
                   data-testid="formulaire-nom-input"
@@ -214,6 +253,18 @@ const FormulaireEditPage = () => {
                     className={!slugAvailable ? 'border-red-500' : ''}
                     data-testid="formulaire-slug-input"
                   />
+                  {formData.slug && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopy}
+                      className="h-10 w-10 shrink-0"
+                      title="Copier le lien complet"
+                    >
+                      {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  )}
                 </div>
                 {checkingSlug && <p className="text-sm text-slate-500">Vérification...</p>}
                 {!checkingSlug && formData.slug && !slugAvailable && (
@@ -223,25 +274,50 @@ const FormulaireEditPage = () => {
                   <p className="text-sm text-green-600">Lien disponible!</p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="titre">Titre affiché</Label>
-                <Input
-                  id="titre"
-                  value={formData.titre}
-                  onChange={(e) => setFormData(prev => ({ ...prev, titre: e.target.value }))}
-                  placeholder="Ex: Contactez-moi"
-                  data-testid="formulaire-titre-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="message">Message d'accueil</Label>
-                <Textarea
-                  id="message"
-                  value={formData.message_accueil}
-                  onChange={(e) => setFormData(prev => ({ ...prev, message_accueil: e.target.value }))}
-                  placeholder="Bienvenue! Je suis là pour vous aider..."
-                  rows={3}
-                />
+              {/* Configuration du message par langue */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-900">Contenu par langue</h3>
+                  <p className="text-xs text-slate-500">Activez d'autres langues en bas pour traduire</p>
+                </div>
+                
+                <Tabs defaultValue="fr" className="w-full">
+                  <TabsList className="mb-4">
+                    {formData.langues.map(lang => (
+                      <TabsTrigger key={lang} value={lang} className="text-xs px-4">
+                        {languageNames[lang] || lang}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  
+                  {formData.langues.map(lang => {
+                    const suffix = lang === 'fr' ? '' : `_${lang}`;
+                    const titreField = `titre${suffix}`;
+                    const messageField = `message_accueil${suffix}`;
+                    
+                    return (
+                      <TabsContent key={lang} value={lang} className="space-y-6 animate-fade-in outline-none">
+                        <div className="space-y-2">
+                          <Label htmlFor={titreField}>Titre ({languageNames[lang]})</Label>
+                          <Input
+                            id={titreField}
+                            value={formData[titreField] || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [titreField]: e.target.value }))}
+                            placeholder={`Titre en ${languageNames[lang]}...`}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={messageField}>Message d'accueil ({languageNames[lang]})</Label>
+                          <RichTextEditor
+                            content={formData[messageField] || ''}
+                            onChange={(html) => setFormData(prev => ({ ...prev, [messageField]: html }))}
+                            placeholder={`Décrivez votre service en ${languageNames[lang]}...`}
+                          />
+                        </div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="actif">Formulaire actif</Label>
@@ -279,12 +355,39 @@ const FormulaireEditPage = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="logo">URL du logo</Label>
-                <Input
-                  id="logo"
-                  value={formData.logo_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, logo_url: e.target.value }))}
-                  placeholder="https://exemple.com/logo.png"
-                />
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1 space-y-1">
+                    <Input
+                      id="logo"
+                      value={formData.logo_url}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, logo_url: e.target.value }));
+                        setLogoError(false);
+                      }}
+                      placeholder="https://exemple.com/logo.png"
+                      className={logoError ? 'border-amber-500' : ''}
+                    />
+                    {logoError && (
+                      <p className="text-[10px] text-amber-600 leading-tight">
+                        L'URL ne semble pas être une image directe. Assurez-vous qu'elle se termine par .jpg, .png...
+                      </p>
+                    )}
+                  </div>
+                  {formData.logo_url && (
+                    <div className={`w-10 h-10 border rounded overflow-hidden flex items-center justify-center shrink-0 ${logoError ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-slate-50'}`}>
+                      {logoError ? (
+                        <ImageOff className="h-4 w-4 text-amber-500" />
+                      ) : (
+                        <img 
+                          src={formData.logo_url} 
+                          alt="Logo preview" 
+                          className="max-w-full max-h-full object-contain"
+                          onError={() => setLogoError(true)}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

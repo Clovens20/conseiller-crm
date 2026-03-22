@@ -70,29 +70,25 @@ code {
     }
 }
 
-/* Rich text editor styles */
-.tiptap-editor {
-    @apply min-h-[200px] p-4 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2;
+/* Rich text editor and viewer styles */
+.tiptap-editor, .prose {
+    @apply max-w-none;
 }
+.tiptap-editor p, .prose p { @apply mb-4 leading-relaxed; }
+.tiptap-editor h1, .prose h1 { @apply text-3xl font-bold mb-4 mt-6; }
+.tiptap-editor h2, .prose h2 { @apply text-2xl font-bold mb-3 mt-5; }
+.tiptap-editor h3, .prose h3 { @apply text-xl font-bold mb-2 mt-4; }
+.tiptap-editor ul, .prose ul { @apply list-disc ml-5 mb-4 space-y-1; }
+.tiptap-editor ol, .prose ol { @apply list-decimal ml-5 mb-4 space-y-1; }
+.tiptap-editor strong, .prose strong { @apply font-bold text-slate-900; }
+.tiptap-editor em, .prose em { @apply italic; }
+.tiptap-editor u, .prose u { @apply underline decoration-slate-300 underline-offset-2; }
+.tiptap-editor [style*="text-align: center"], .prose [style*="text-align: center"] { @apply text-center block w-full; }
+.tiptap-editor [style*="text-align: right"], .prose [style*="text-align: right"] { @apply text-right block w-full; }
+.tiptap-editor [style*="text-align: left"], .prose [style*="text-align: left"] { @apply text-left block w-full; }
 
 .tiptap-editor:focus {
     @apply outline-none;
-}
-
-.tiptap-editor p {
-    @apply mb-2;
-}
-
-.tiptap-editor strong {
-    @apply font-bold;
-}
-
-.tiptap-editor em {
-    @apply italic;
-}
-
-.tiptap-editor u {
-    @apply underline;
 }
 
 .tiptap-editor .is-editor-empty:first-child::before {

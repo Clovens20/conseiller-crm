@@ -93,7 +93,8 @@ const PublicFormPage = () => {
       
       setSubmitted(true);
     } catch (err) {
-      toast.error(t.error_message);
+      console.error('Erreur submission lead:', err);
+      toast.error(err.message || t.error_message);
     } finally {
       setSubmitting(false);
     }
@@ -198,13 +199,18 @@ const PublicFormPage = () => {
             className="text-3xl font-bold mb-2"
             style={{ color: formulaire?.couleur_primaire }}
           >
-            {formulaire?.titre || companyName}
+            {(langue === 'fr' ? formulaire?.titre : (formulaire?.[`titre_${langue}`] || formulaire?.titre)) || companyName}
           </h1>
-          {formulaire?.message_accueil && (
-            <p className="text-slate-600 max-w-md mx-auto">
-              {formulaire.message_accueil}
-            </p>
-          )}
+          {(() => {
+            const msg = langue === 'fr' ? formulaire?.message_accueil : (formulaire?.[`message_accueil_${langue}`] || formulaire?.message_accueil);
+            if (!msg) return null;
+            return (
+              <div 
+                className="mt-4 text-slate-600 max-w-md mx-auto prose prose-sm text-center"
+                dangerouslySetInnerHTML={{ __html: msg }}
+              />
+            );
+          })()}
         </div>
 
         {/* Form */}

@@ -42,7 +42,8 @@ const ClientsPage = () => {
       const data = await getClients(searchTerm, status === 'all' ? '' : status);
       setClients(data);
     } catch (error) {
-      toast.error('Erreur lors du chargement des clients');
+      console.error('Erreur chargement clients:', error);
+      toast.error(error.message || 'Erreur lors du chargement des clients');
     } finally {
       setLoading(false);
     }

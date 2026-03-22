@@ -89,7 +89,10 @@ export const getClients = async (search = '', statut = '') => {
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) {
+    console.error('Erreur Supabase getClients:', error);
+    throw error;
+  }
 
   let clients = data || [];
 

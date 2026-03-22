@@ -15,7 +15,11 @@ import {
   AlignRight,
   List,
   ListOrdered,
-  Palette
+  Palette,
+  Heading1,
+  Heading2,
+  Heading3,
+  Type
 } from 'lucide-react';
 import {
   Popover,
@@ -33,6 +37,49 @@ const MenuBar = ({ editor }) => {
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 bg-slate-50 rounded-t-lg">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().setParagraph().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('paragraph') ? 'bg-slate-200' : ''}`}
+        title="Texte normal"
+      >
+        <Type className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('heading', { level: 1 }) ? 'bg-slate-200' : ''}`}
+        title="Titre 1"
+      >
+        <Heading1 className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('heading', { level: 2 }) ? 'bg-slate-200' : ''}`}
+        title="Titre 2"
+      >
+        <Heading2 className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('heading', { level: 3 }) ? 'bg-slate-200' : ''}`}
+        title="Titre 3"
+      >
+        <Heading3 className="h-4 w-4" />
+      </Button>
+
+      <div className="w-px h-6 bg-slate-300 mx-1" />
+
       <Button
         type="button"
         variant="ghost"
@@ -174,6 +221,12 @@ const RichTextEditor = ({ content, onChange, placeholder }) => {
       },
     },
   });
+
+  React.useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content || '', false);
+    }
+  }, [content, editor]);
 
   return (
     <div className="border border-slate-200 rounded-lg overflow-hidden" data-testid="rich-text-editor">

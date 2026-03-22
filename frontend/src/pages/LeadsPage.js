@@ -50,7 +50,8 @@ const LeadsPage = () => {
       // Optionally navigate to the new client
       // navigate(`/clients/${client.id}`);
     } catch (error) {
-      toast.error('Erreur lors de la conversion');
+      console.error('Erreur conversion lead:', error);
+      toast.error(error.message || 'Erreur lors de la conversion');
     } finally {
       setConverting(null);
     }
