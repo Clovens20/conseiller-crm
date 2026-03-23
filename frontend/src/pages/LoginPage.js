@@ -29,8 +29,13 @@ const LoginPage = () => {
           setLoading(false);
           return;
         }
-        await register(email, password, nomComplet);
-        toast.success('Compte créé avec succès!');
+        const result = await register(email, password, nomComplet);
+        if (result?.status === 'pending') {
+          toast.info(result.message);
+          setIsLogin(true); // Switch back to login for them to sign in after confirmation
+        } else {
+          toast.success('Compte créé avec succès!');
+        }
       }
     } catch (error) {
       const message = error.message || 'Une erreur est survenue';
@@ -136,7 +141,7 @@ const LoginPage = () => {
                   ) : (
                     <span className="flex items-center gap-2">
                       {isLogin ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-                      {isLogin ? 'Se connecter' : 'Créer le compte'}
+                      {isLogin ? 'Se connecter' : 'Créer mon compte'}
                     </span>
                   )}
                 </Button>

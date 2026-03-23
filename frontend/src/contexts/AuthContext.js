@@ -63,28 +63,36 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (error) {
+      if (error.status === 429 || error.message?.includes('security purposes')) {
+        throw new Error("Trop de tentatives de création de compte. Veuillez patienter environ une minute avant de réessayer.");
+      }
       throw new Error(error.message || 'Erreur lors de la création du compte');
     }
 
     if (!data?.user) {
-      throw new Error('Compte créé, veuillez vérifier votre email pour activer le compte');
+      // Cas où l'utilisateur n'est pas retourné immédiatement (souvent si l'email de confirmation est requis)
+      return { status: 'pending', message: 'Compte créé! Veuillez vérifier votre email pour activer votre compte.' };
     }
 
     const userData = mapSupabaseUser(data.user);
 
     // Keep this profile table in sync with auth metadata.
-    const { error: profileError } = await supabase
-      .from('conseiller_profiles')
-      .upsert({
-        user_id: data.user.id,
-        email,
-        nom_complet: nomComplet
-      })
-      .select('user_id')
-      .single();
-
-    if (profileError && profileError.code !== '42501') {
-      throw profileError;
+    try {
+      const { error: profileError } = await supabase
+        .from('conseiller_profiles')
+        .upsert({
+          user_id: data.user.id,
+          email,
+          nom_complet: nomComplet
+        })
+        .select('user_id')
+        .single();
+      
+      if (profileError && profileError.code !== '42501') {
+        console.error('Erreur lors de la création du profil:', profileError);
+      }
+    } catch (err) {
+      console.error('Exception lors de la création du profil:', err);
     }
 
     setUser(userData);
