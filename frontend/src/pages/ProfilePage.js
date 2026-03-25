@@ -55,9 +55,10 @@ const ProfilePage = () => {
       await createOrUpdateProfile(formData);
       toast.success('Profil enregistré avec succès!');
     } catch (error) {
-      toast.error('Erreur lors de l\'enregistrement');
+      toast.error(`Erreur: ${error.message || 'Impossible d\'enregistrer le profil'}`);
       console.error(error);
     } finally {
+
       setSaving(false);
     }
   };

@@ -44,7 +44,9 @@ const PublicFormPage = () => {
     };
     
     incrementFormVisits(slug, analyticsData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
+
 
 
   useEffect(() => {

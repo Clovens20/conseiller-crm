@@ -43,15 +43,29 @@ export const createOrUpdateProfile = async (profileData) => {
     if (error) throw error;
     return data;
   } else {
+    // Generate a simple slug from company name if not provided
+    const slug = profileData.slug || 
+                 (profileData.nom_compagnie || 'conseiller')
+                 .toLowerCase()
+                 .replace(/[^a-z0-9]+/g, '-')
+                 .replace(/(^-|-$)/g, '');
+
     const { data, error } = await supabase
       .from('conseiller_profiles')
-      .insert({ ...profileData, user_id: userId, created_at: now, updated_at: now })
+      .insert({ 
+        ...profileData, 
+        slug: slug, 
+        user_id: userId, 
+        created_at: now, 
+        updated_at: now 
+      })
       .select()
       .single();
     if (error) throw error;
     return data;
   }
 };
+
 
 // ============ Formulaires ============
 
