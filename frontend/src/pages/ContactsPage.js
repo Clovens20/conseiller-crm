@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -52,10 +52,14 @@ const ContactsPage = () => {
   const fetchContacts = async () => {
     try {
       setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) return;
 
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -78,9 +82,29 @@ const ContactsPage = () => {
     }
     setSaving(true);
     try {
+      // Récupérer l'ID de l'utilisateur connecté
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        toast.error('Session expirée. Veuillez vous reconnecter.');
+        return;
+      }
+
+      // Nettoyage des données pour la base de données (remplace les chaînes vides par null)
+      const dataToSave = {
+        ...form,
+        user_id: userId,
+        date_contact:  form.date_contact  || null,
+        heure_contact: form.heure_contact || null,
+        email:         form.email         || null,
+        objectif:      form.objectif      || null,
+        notes:         form.notes         || null,
+      };
+
       const { error } = await supabase
         .from('contacts')
-        .insert([{ ...form }]);
+        .insert([dataToSave]);
 
       if (error) throw error;
 
@@ -179,16 +203,25 @@ const ContactsPage = () => {
     }
   };
 
-  const contactsFiltres = contacts.filter((c) => {
-    const matchNom    = c.nom_complet.toLowerCase().includes(recherche.toLowerCase());
-    const matchStatut = filtreStatut === 'all' || c.statut === filtreStatut;
-    return matchNom && matchStatut;
-  });
+  // Calculs mémorisés pour éviter les décalages d'affichage
+  const { contactsFiltres, compteurs, totalTotal } = useMemo(() => {
+    const filtres = contacts.filter((c) => {
+      const matchNom = c.nom_complet.toLowerCase().includes(recherche.toLowerCase());
+      const matchStatut = filtreStatut === 'all' || c.statut === filtreStatut;
+      return matchNom && matchStatut;
+    });
 
-  const compteurs = STATUTS.reduce((acc, s) => {
-    acc[s] = contacts.filter((c) => c.statut === s).length;
-    return acc;
-  }, {});
+    const counts = STATUTS.reduce((acc, s) => {
+      acc[s] = contacts.filter((c) => c.statut === s).length;
+      return acc;
+    }, {});
+
+    return { 
+      contactsFiltres: filtres, 
+      compteurs: counts, 
+      totalTotal: contacts.length 
+    };
+  }, [contacts, recherche, filtreStatut]);
 
   return (
     <div className="p-4 md:p-8 animate-fade-in">
@@ -200,7 +233,7 @@ const ContactsPage = () => {
             Contacts
           </h1>
           <p className="text-slate-500 mt-1">
-            {contacts.length} contact{contacts.length !== 1 ? 's' : ''} au total
+            {totalTotal} contact{totalTotal !== 1 ? 's' : ''} au total
           </p>
         </div>
         <Button
