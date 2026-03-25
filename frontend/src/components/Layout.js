@@ -50,8 +50,8 @@ const Layout = ({ children }) => {
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
     { path: '/clients', icon: Users, label: 'Clients' },
-    { path: '/leads', icon: UserPlus, label: 'Leads', badge: newLeadsCount },
-    { path: '/contacts', icon: BookUser, label: 'Contacts' }, // ← NOUVEAU
+    { path: '/leads', icon: UserPlus, label: 'Conduit', badge: newLeadsCount },
+    { path: '/contacts', icon: BookUser, label: 'Contacts' },
     { path: '/agenda', icon: Calendar, label: 'Agenda', badge: overdueCount },
     { path: '/formulaires', icon: FileText, label: 'Formulaires' },
     { path: '/profile', icon: Settings, label: 'Profil' },

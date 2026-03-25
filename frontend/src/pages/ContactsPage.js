@@ -30,6 +30,9 @@ const FORM_VIDE = {
   telephone: '',
   email: '',
   objectif: '',
+  notes: '',
+  date_contact: '',
+  heure_contact: '',
   statut: 'À contacter',
 };
 
@@ -92,16 +95,64 @@ const ContactsPage = () => {
     }
   };
 
-  const changerStatut = async (id, nouveauStatut) => {
+  const changerStatut = async (contact, nouveauStatut) => {
     try {
+      setLoading(true);
+      
+      // Si on passe en négociation, on déplace vers les Leads (le "Conduit")
+      if (nouveauStatut === 'En négociation') {
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+
+        if (!userId) {
+          toast.error('Session expirée. Veuillez vous reconnecter.');
+          return;
+        }
+
+        // 1. Créer le lead
+        const leadData = {
+          user_id: userId,
+          nom_complet: contact.nom_complet,
+          telephone: contact.telephone,
+          email: contact.email,
+          details: `Objectif: ${contact.objectif || ''}\nNotes: ${contact.notes || ''}\nPlanifié le: ${contact.date_contact || ''} ${contact.heure_contact || ''}`,
+          converti: false,
+          created_at: new Date().toISOString()
+        };
+
+        const { error: insertError } = await supabase
+          .from('leads')
+          .insert([leadData]);
+
+        if (insertError) throw insertError;
+
+        // 2. Supprimer le contact
+        const { error: deleteError } = await supabase
+          .from('contacts')
+          .delete()
+          .eq('id', contact.id);
+
+        if (deleteError) throw deleteError;
+
+        toast.success(`Le contact ${contact.nom_complet} a été déplacé dans le Conduit (Leads) !`);
+        fetchContacts();
+        return;
+      }
+
+      // Changement de statut normal
       const { error } = await supabase
         .from('contacts')
         .update({ statut: nouveauStatut })
-        .eq('id', id);
+        .eq('id', contact.id);
+
       if (error) throw error;
+      toast.success(`Statut mis à jour : ${nouveauStatut}`);
       fetchContacts();
     } catch (error) {
+      console.error('Erreur automation:', error);
       toast.error('Erreur lors du changement de statut');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,44 +233,84 @@ const ContactsPage = () => {
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
               Nouveau contact
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                name="nom_complet"
-                placeholder="Nom complet *"
-                value={form.nom_complet}
-                onChange={handleChange}
-              />
-              <Input
-                name="telephone"
-                placeholder="Téléphone"
-                value={form.telephone}
-                onChange={handleChange}
-              />
-              <Input
-                name="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-              />
-              <select
-                name="statut"
-                value={form.statut}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-200 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"
-              >
-                {STATUTS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              <div className="md:col-span-2">
-                <textarea
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-500 ml-1">Informations de base</label>
+                <Input
+                  name="nom_complet"
+                  placeholder="Nom complet *"
+                  value={form.nom_complet}
+                  onChange={handleChange}
+                  className="bg-white border-slate-300"
+                />
+                <Input
+                  name="telephone"
+                  placeholder="Téléphone"
+                  value={form.telephone}
+                  onChange={handleChange}
+                  className="bg-white border-slate-300"
+                />
+                <Input
+                  name="email"
+                  placeholder="Email"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="bg-white border-slate-300"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-500 ml-1">Planification & Statut</label>
+                <div className="flex gap-2">
+                  <Input
+                    name="date_contact"
+                    type="date"
+                    value={form.date_contact}
+                    onChange={handleChange}
+                    className="flex-1 bg-white border-slate-300"
+                  />
+                  <Input
+                    name="heure_contact"
+                    type="time"
+                    value={form.heure_contact}
+                    onChange={handleChange}
+                    className="w-32 bg-white border-slate-300"
+                  />
+                </div>
+                <select
+                  name="statut"
+                  value={form.statut}
+                  onChange={handleChange}
+                  className="w-full h-10 px-3 py-2 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"
+                >
+                  {STATUTS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <Input
                   name="objectif"
-                  placeholder="Objectif / Notes (ex: offrir assurance vie, retraite...)"
+                  placeholder="Objectif (Retraite, Vie, etc.)"
                   value={form.objectif}
                   onChange={handleChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="bg-white border-slate-300"
                 />
+              </div>
+
+              <div className="space-y-2 lg:col-span-1">
+                <label className="text-xs font-medium text-slate-500 ml-1">Cahier de notes</label>
+                <div className="relative h-[132px] w-full">
+                  <div className="absolute inset-0 bg-yellow-50 rounded-md border border-yellow-200 shadow-inner" 
+                       style={{ backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '100% 1.5rem' }}>
+                  </div>
+                  <textarea
+                    name="notes"
+                    placeholder="Détails du projet / Notes importantes..."
+                    value={form.notes}
+                    onChange={handleChange}
+                    rows={4}
+                    className="relative w-full h-full p-3 bg-transparent border-0 text-sm resize-none focus:outline-none focus:ring-0 leading-6 text-slate-800"
+                  />
+                </div>
               </div>
             </div>
             <div className="flex gap-3 mt-4">
@@ -343,19 +434,38 @@ const ContactsPage = () => {
                       )}
                     </div>
 
-                    {/* Objectif */}
-                    {contact.objectif && (
-                      <p className="text-sm text-slate-500 italic mb-3">
-                        🎯 {contact.objectif}
-                      </p>
+                    {/* Objectif & Notes */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {contact.objectif && (
+                        <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">🎯 Objectif</p>
+                          <p className="text-sm text-slate-700">{contact.objectif}</p>
+                        </div>
+                      )}
+                      {(contact.date_contact || contact.heure_contact) && (
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                          <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">📅 Prochain Contact</p>
+                          <p className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+                             {contact.date_contact || 'Non définie'} 
+                             {contact.heure_contact && <span className="text-blue-600">à {contact.heure_contact}</span>}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {contact.notes && (
+                      <div className="mb-4 p-4 bg-yellow-50 rounded shadow-sm border-l-4 border-yellow-400 font-serif italic text-slate-800">
+                        <p className="text-xs not-italic font-bold text-yellow-600 mb-1 uppercase tracking-tight">Cahier de notes :</p>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{contact.notes}</p>
+                      </div>
                     )}
 
                     {/* Boutons changement de statut */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {STATUTS.map((s) => (
                         <button
                           key={s}
-                          onClick={() => changerStatut(contact.id, s)}
+                          onClick={() => changerStatut(contact, s)}
                           className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
                             contact.statut === s
                               ? STATUT_STYLES[s]
@@ -367,8 +477,8 @@ const ContactsPage = () => {
                       ))}
                     </div>
 
-                    <small className="text-slate-300 mt-2 block">
-                      Ajouté le {new Date(contact.created_at).toLocaleDateString('fr-CA')}
+                    <small className="text-slate-350 mt-2 block">
+                      Fiche créée le {new Date(contact.created_at).toLocaleDateString('fr-CA')}
                     </small>
                   </div>
 

@@ -108,7 +108,7 @@ const LeadsPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-            Leads Marketing
+            Conduit (Leads)
           </h1>
           <p className="text-slate-500 mt-1">
             {leads.length} lead{leads.length !== 1 ? 's' : ''} au total
