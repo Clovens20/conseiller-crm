@@ -18,7 +18,7 @@ export const translations = {
     success_message: "Votre demande a été envoyée avec succès. Votre conseiller vous contactera bientôt.",
     error_message: "Une erreur est survenue. Veuillez réessayer.",
     required: "Ce champ est requis",
-    devenir_conseiller: "Je souhaite devenir conseiller en finance personnelle",
+    devenir_conseiller: "Je souhaite devenir conseiller(ère) en finance personnelle",
     devenir_conseiller_description: "Cochez cette case si vous êtes intéressé par une carrière de conseiller financier",
     besoins_options: {
       analyse_financiere: "Besoin d'une analyse financière",

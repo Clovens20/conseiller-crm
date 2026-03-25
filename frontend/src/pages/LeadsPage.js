@@ -174,7 +174,7 @@ const LeadsPage = () => {
                       {lead.veut_devenir_conseiller && (
                         <Badge className="bg-amber-100 text-amber-800 border-amber-200">
                           <Briefcase className="h-3 w-3 mr-1" />
-                          Veut devenir conseiller
+                          Veut devenir conseiller(ère)
                         </Badge>
                       )}
                     </div>

@@ -271,7 +271,7 @@ export const convertLeadToClient = async (leadId) => {
       telephone: lead.telephone,
       courriel: lead.email,
       statut: 'prospect',
-      notes: `<p><strong>Besoins exprimés:</strong></p><ul>${(lead.besoins || []).map(b => `<li>${b}</li>`).join('')}</ul>${lead.details ? `<p><strong>Détails:</strong> ${lead.details}</p>` : ''}${lead.veut_devenir_conseiller ? '<p><strong>⭐ Veut devenir conseiller</strong></p>' : ''}`,
+      notes: `<p><strong>Besoins exprimés:</strong></p><ul>${(lead.besoins || []).map(b => `<li>${b}</li>`).join('')}</ul>${lead.details ? `<p><strong>Détails:</strong> ${lead.details}</p>` : ''}${lead.veut_devenir_conseiller ? '<p><strong>⭐ Veut devenir conseiller(ère)</strong></p>' : ''}`,
       source: 'Formulaire marketing',
       created_at: now,
       updated_at: now
