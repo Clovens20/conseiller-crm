@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getFormulaires, deleteFormulaire } from '../services/marketingApi';
+import { getFormulaires, deleteFormulaire, getFormVisits } from '../services/marketingApi';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, FileText, Pencil, Trash2, Copy, ExternalLink, Globe } from 'lucide-react';
+import { Plus, FileText, Pencil, Trash2, Copy, ExternalLink, Globe, Eye, BarChart3, Smartphone, Monitor } from 'lucide-react';
 import { languageNames } from '../utils/translations';
 
 const FormulairesPage = () => {
@@ -23,6 +23,10 @@ const FormulairesPage = () => {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formulaireToDelete, setFormulaireToDelete] = useState(null);
+  const [statsDialogOpen, setStatsDialogOpen] = useState(false);
+  const [selectedForm, setSelectedForm] = useState(null);
+  const [visits, setVisits] = useState([]);
+  const [loadingVisits, setLoadingVisits] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,6 +60,24 @@ const FormulairesPage = () => {
     } finally {
       setDeleteDialogOpen(false);
       setFormulaireToDelete(null);
+    }
+  };
+
+
+
+  const handleStatsClick = async (form) => {
+    setSelectedForm(form);
+    setStatsDialogOpen(true);
+    setLoadingVisits(true);
+    try {
+      const data = await getFormVisits(form.id);
+      setVisits(data);
+    } catch (error) {
+      console.error('Stats load error:', error);
+      toast.error(`Erreur: ${error.message || 'Impossible de charger les statistiques'}`);
+    } finally {
+
+      setLoadingVisits(false);
     }
   };
 
@@ -135,6 +157,10 @@ const FormulairesPage = () => {
                       ) : (
                         <Badge className="bg-slate-100 text-slate-600">Inactif</Badge>
                       )}
+                      <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
+                        <Eye className="h-3 w-3" />
+                        {form.nb_visites || 0} visite{(form.nb_visites || 0) !== 1 ? 's' : ''}
+                      </Badge>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -166,6 +192,14 @@ const FormulairesPage = () => {
                       title="Copier le lien"
                     >
                       <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleStatsClick(form)}
+                      title="Statistiques détaillées"
+                    >
+                      <BarChart3 className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
@@ -216,6 +250,68 @@ const FormulairesPage = () => {
               className="bg-red-600 hover:bg-red-700"
             >
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={statsDialogOpen} onOpenChange={setStatsDialogOpen}>
+        <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Statistiques de visites : {selectedForm?.nom}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Aperçu des sources de trafic et des appareils utilisés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4">
+            {loadingVisits ? (
+              <div className="flex justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
+              </div>
+            ) : visits.length === 0 ? (
+              <p className="text-center text-slate-500 py-8">Aucune visite enregistrée pour le moment.</p>
+            ) : (
+              <div className="space-y-3">
+                {visits.slice(0, 20).map((visit) => (
+                  <div key={visit.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg text-sm border border-slate-100">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-slate-900">
+                        {visit.utm_source ? `Campagne: ${visit.utm_source}` : 'Visite directe / Inconnue'}
+                      </span>
+                      <span className="text-xs text-slate-500 truncate max-w-[300px]" title={visit.referrer}>
+                        Ref: {visit.referrer || 'Aucun'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-xs font-mono text-slate-400">
+                        {new Date(visit.created_at).toLocaleString('fr-CA')}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {visit.device_type === 'mobile' ? (
+                          <Smartphone className="h-3 w-3 text-slate-500" />
+                        ) : (
+                          <Monitor className="h-3 w-3 text-slate-500" />
+                        )}
+                        <span className="text-[10px] uppercase font-semibold text-slate-400">
+                          {visit.device_type}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {visits.length > 20 && (
+                  <p className="text-center text-xs text-slate-400 pt-2 italic">
+                    Affichage des 20 dernières visites sur {visits.length}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setStatsDialogOpen(false)}>
+              Fermer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

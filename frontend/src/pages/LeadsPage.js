@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { UserPlus, Trash2, Phone, Mail, Calendar, CheckCircle, Clock, Globe, Briefcase } from 'lucide-react';
+import { UserPlus, Trash2, Phone, Mail, Calendar, CheckCircle, Clock, Globe, Briefcase, FileWarning } from 'lucide-react';
 import { languageNames } from '../utils/translations';
 
 const LeadsPage = () => {
@@ -146,7 +146,7 @@ const LeadsPage = () => {
           {leads.map((lead) => (
             <Card 
               key={lead.id}
-              className={`border-slate-200 ${!lead.converti ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
+              className={`border-slate-200 ${!lead.converti && !lead.est_partiel ? 'ring-2 ring-green-500 ring-offset-2' : ''} ${lead.est_partiel ? 'bg-amber-50/30' : ''}`}
               data-testid={`lead-card-${lead.id}`}
             >
               <CardContent className="p-4 md:p-6">
@@ -165,6 +165,12 @@ const LeadsPage = () => {
                         <Badge className="bg-green-100 text-green-700">
                           <Clock className="h-3 w-3 mr-1" />
                           Nouveau
+                        </Badge>
+                      )}
+                      {lead.est_partiel && !lead.converti && (
+                        <Badge className="bg-amber-100 text-amber-700">
+                          <FileWarning className="h-3 w-3 mr-1" />
+                          Partiel
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-xs">
@@ -194,6 +200,12 @@ const LeadsPage = () => {
                           </a>
                         </span>
                       )}
+                      {lead.utm_source && (
+                        <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200">
+                          Source: {lead.utm_source}
+                        </Badge>
+                      )}
+
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
                         {formatDate(lead.created_at)}

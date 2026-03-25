@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getFormulaireBySlug, createLead } from '../services/marketingApi';
+import { getFormulaireBySlug, createLead, incrementFormVisits } from '../services/marketingApi';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -32,7 +32,20 @@ const PublicFormPage = () => {
 
   useEffect(() => {
     loadFormulaire();
+    
+    // Analytics gathering
+    const searchParams = new URLSearchParams(window.location.search);
+    const analyticsData = {
+      referrer: document.referrer,
+      utm_source: searchParams.get('utm_source'),
+      utm_medium: searchParams.get('utm_medium'),
+      utm_campaign: searchParams.get('utm_campaign'),
+      device_type: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    };
+    
+    incrementFormVisits(slug, analyticsData);
   }, [slug]);
+
 
   useEffect(() => {
     setT(getTranslation(langue));
@@ -50,6 +63,30 @@ const PublicFormPage = () => {
       setError('Formulaire non trouvé');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePartialCapture = async () => {
+    if (!formData.email && !formData.nom_complet) return;
+    
+    // Only capture if email looks valid or name is present
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    try {
+      await createLead({
+        nom_complet: formData.nom_complet || 'Capturé partiellement',
+        email: formData.email || null,
+        telephone: formData.telephone || null,
+        langue: langue,
+        veut_devenir_conseiller: formData.veut_devenir_conseiller,
+        utm_source: searchParams.get('utm_source'),
+        referrer: document.referrer
+      }, slug, true);
+    } catch (err) {
+      // Don't toast for partial capture errors to avoid annoying user
+      console.error('Erreur partial capture:', err);
     }
   };
 
@@ -80,6 +117,7 @@ const PublicFormPage = () => {
     }
 
     setSubmitting(true);
+    const searchParams = new URLSearchParams(window.location.search);
     try {
       await createLead({
         nom_complet: formData.nom_complet,
@@ -88,8 +126,10 @@ const PublicFormPage = () => {
         besoins: formData.besoins,
         details: formData.details || null,
         langue: langue,
-        veut_devenir_conseiller: formData.veut_devenir_conseiller
-      }, slug);
+        veut_devenir_conseiller: formData.veut_devenir_conseiller,
+        utm_source: searchParams.get('utm_source'),
+        referrer: document.referrer
+      }, slug, false); // isPartial = false for final submission
       
       setSubmitted(true);
     } catch (err) {
@@ -242,6 +282,7 @@ const PublicFormPage = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  onBlur={handlePartialCapture}
                   placeholder={t.email_placeholder}
                   data-testid="form-email-input"
                 />

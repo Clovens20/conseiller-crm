@@ -1,0 +1,30 @@
+﻿--- Table: formulaires ---
+[
+  'id',                    'user_id',
+  'nom',                   'slug',
+  'titre',                 'message_accueil',
+  'couleur_primaire',      'couleur_secondaire',
+  'logo_url',              'langues',
+  'besoins_personnalises', 'actif',
+  'created_at',            'updated_at',
+  'titre_en',              'titre_es',
+  'titre_ht',              'message_accueil_en',
+  'message_accueil_es',    'message_accueil_ht'
+]
+
+--- Table: leads ---
+[
+  'id',
+  'user_id',
+  'nom_complet',
+  'email',
+  'telephone',
+  'besoins',
+  'details',
+  'langue',
+  'converti',
+  'client_id',
+  'created_at',
+  'veut_devenir_conseiller',
+  'formulaire_id'
+]

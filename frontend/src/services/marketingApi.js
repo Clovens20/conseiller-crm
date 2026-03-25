@@ -218,7 +218,7 @@ export const getNewLeadsCount = async () => {
   }
 };
 
-export const createLead = async (leadData, slug) => {
+export const createLead = async (leadData, slug, isPartial = false) => {
   // Get formulaire and user_id from slug
   const { data: formulaire, error: formError } = await supabase
     .from('formulaires')
@@ -228,6 +228,32 @@ export const createLead = async (leadData, slug) => {
 
   if (formError || !formulaire) throw new Error('Formulaire non trouvé');
 
+  // If partial and we have an email, try to upsert to avoid duplicates
+  if (isPartial && leadData.email) {
+    const { data: existing } = await supabase
+      .from('leads')
+      .select('id')
+      .eq('email', leadData.email)
+      .eq('formulaire_id', formulaire.id)
+      .eq('converti', false)
+      .single();
+
+    if (existing) {
+      const { data, error } = await supabase
+        .from('leads')
+        .update({
+          ...leadData,
+          est_partiel: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    }
+  }
+
   const { data, error } = await supabase
     .from('leads')
     .insert({
@@ -235,6 +261,7 @@ export const createLead = async (leadData, slug) => {
       user_id: formulaire.user_id,
       formulaire_id: formulaire.id,
       converti: false,
+      est_partiel: isPartial,
       created_at: new Date().toISOString()
     })
     .select()
@@ -243,6 +270,57 @@ export const createLead = async (leadData, slug) => {
   if (error) throw error;
   return data;
 };
+
+export const incrementFormVisits = async (slug, analyticsData = {}) => {
+  const { data, error: fetchError } = await supabase
+    .from('formulaires')
+    .select('id, user_id, nb_visites')
+    .eq('slug', slug)
+    .single();
+
+  if (fetchError || !data) return;
+
+  // 1. Update simple counter (optional but fast for overview)
+  await supabase
+    .from('formulaires')
+    .update({ nb_visites: (data.nb_visites || 0) + 1 })
+    .eq('id', data.id);
+
+  // 2. Insert detailed visit record
+  const { error: visitError } = await supabase
+    .from('form_visits')
+    .insert({
+      formulaire_id: data.id,
+      user_id: data.user_id,
+      referrer: analyticsData.referrer || null,
+      utm_source: analyticsData.utm_source || null,
+      utm_medium: analyticsData.utm_medium || null,
+      utm_campaign: analyticsData.utm_campaign || null,
+      device_type: analyticsData.device_type || 'unknwon',
+    });
+    
+  if (visitError) {
+    if (visitError.code !== '42P01') console.error('Error tracking visit:', visitError.message);
+  }
+};
+
+
+export const getFormVisits = async (formulaireId) => {
+  const { data, error } = await supabase
+    .from('form_visits')
+    .select('*')
+    .eq('formulaire_id', formulaireId)
+    .order('created_at', { ascending: false });
+    
+  if (error) {
+    // Si la table n'existe pas encore, on retourne un tableau vide au lieu de crasher
+    if (error.code === '42P01') return []; 
+    throw error;
+  }
+  return data;
+};
+
+
 
 export const convertLeadToClient = async (leadId) => {
   const userId = await getCurrentUserId();

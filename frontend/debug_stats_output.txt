@@ -1,0 +1,5 @@
+﻿Sample formulaire: {
+  id: 'abc8b9aa-b6f1-4d6a-88bb-39c13121afef',
+  user_id: '8b7f9e8a-c82c-4860-bc34-762cf14ea55e',
+  nb_visites: 7
+}
