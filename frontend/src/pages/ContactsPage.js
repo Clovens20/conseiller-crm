@@ -59,10 +59,13 @@ const ContactsPage = () => {
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
-        .eq('user_id', userId)
+        .or(`user_id.eq.${userId},user_id.is.null`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase detail:', error);
+        throw error;
+      }
       setContacts(data || []);
     } catch (error) {
       toast.error('Erreur lors du chargement des contacts');
