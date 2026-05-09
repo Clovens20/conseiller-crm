@@ -1,10 +1,11 @@
 // Status badge classes
 export const getStatusBadgeClass = (status) => {
   const classes = {
-    prospect: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    actif: 'bg-green-100 text-green-800 border-green-200',
-    suivi: 'bg-sky-100 text-sky-800 border-sky-200',
-    ferme: 'bg-gray-100 text-gray-600 border-gray-200'
+    prospect: 'bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full text-xs font-semibold inline-block',
+    actif: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-full text-xs font-semibold inline-block',
+    suivi: 'bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-full text-xs font-semibold inline-block',
+    ferme: 'bg-slate-500/20 text-slate-400 border border-slate-500/30 px-2.5 py-1 rounded-full text-xs font-semibold inline-block',
+    nouveau: 'bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-1 rounded-full text-xs font-semibold inline-block'
   };
   return classes[status] || classes.prospect;
 };

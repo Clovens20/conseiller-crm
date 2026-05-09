@@ -1,0 +1,133 @@
+'use client';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+
+const AuthContext = createContext<any>(null);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const bootstrapAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user || null;
+      setUser(currentUser ? mapSupabaseUser(currentUser) : null);
+      setLoading(false);
+    };
+
+    bootstrapAuth();
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user || null;
+      setUser(currentUser ? mapSupabaseUser(currentUser) : null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error || !data?.user) {
+      throw new Error(error?.message || 'Email ou mot de passe incorrect');
+    }
+
+    const userData = mapSupabaseUser(data.user);
+    setUser(userData);
+    return userData;
+  };
+
+  const register = async (email: string, password: string, nomComplet: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nom_complet: nomComplet
+        }
+      }
+    });
+
+    if (error) {
+      if (error.status === 429 || error.message?.includes('security purposes')) {
+        throw new Error("Trop de tentatives de création de compte. Veuillez patienter environ une minute avant de réessayer.");
+      }
+      throw new Error(error.message || 'Erreur lors de la création du compte');
+    }
+
+    if (!data?.user) {
+      return { status: 'pending', message: 'Compte créé! Veuillez vérifier votre email pour activer votre compte.' };
+    }
+
+    const userData = mapSupabaseUser(data.user);
+
+    try {
+      const { error: profileError } = await supabase
+        .from('profils')
+        .upsert({
+          id: data.user.id,
+          email,
+          nom_complet: nomComplet
+        })
+        .select('id')
+        .single();
+      
+      if (profileError && profileError.code !== '42501') {
+        console.error('Erreur lors de la création du profil:', profileError);
+      }
+    } catch (err) {
+      console.error('Exception lors de la création du profil:', err);
+    }
+
+    setUser(userData);
+    return userData;
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  const updateUser = (updatedData: any) => {
+    setUser((prev: any) => ({ ...(prev || {}), ...updatedData }));
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    updateUser,
+    isAuthenticated: !!user
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+const mapSupabaseUser = (authUser: any) => ({
+  id: authUser.id,
+  email: authUser.email,
+  nom_complet: authUser.user_metadata?.nom_complet || authUser.email?.split('@')[0] || '',
+  created_at: authUser.created_at
+});
