@@ -19,6 +19,7 @@ import FormulaireEditPage from '@/legacy-pages/FormulaireEditPage';
 import ContactsPage from '@/legacy-pages/ContactsPage';
 import ProfilePage from '@/legacy-pages/ProfilePage';
 import ProspectsPage from '@/components/ProspectsPage';
+import CMSPage from '@/components/CMSPage';
 
 export default function AdminPage() {
   const params = useParams();
@@ -66,6 +67,8 @@ export default function AdminPage() {
         return <FormulairesPage />;
       case 'profile':
         return <ProfilePage />;
+      case 'cms':
+        return <CMSPage />;
       default:
         return <DashboardPage />;
     }

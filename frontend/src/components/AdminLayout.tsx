@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getSuivis } from '@/services/api';
 import { getNewLeadsCount } from '@/services/marketingApi';
 import { 
-  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings, FileText, BookUser, MessageSquare
+  LayoutDashboard, Users, Calendar, LogOut, Menu, X, Plus, UserPlus, Settings, FileText, BookUser, MessageSquare, Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -66,6 +66,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     { path: '/admin/contacts', icon: BookUser, label: 'Contacts' },
     { path: '/admin/agenda', icon: Calendar, label: 'Agenda', badge: overdueCount },
     { path: '/admin/formulaires', icon: FileText, label: 'Formulaires' },
+    { path: '/admin/cms', icon: Globe, label: 'Contenu' },
     { path: '/admin/profile', icon: Settings, label: 'Profil' },
   ];
 

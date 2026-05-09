@@ -1,11 +1,6 @@
-import * as React from "react"
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels"
 import { GripVertical } from "lucide-react"
-import {
-  Group as PanelGroup,
-  Panel,
-  Separator as PanelResizeHandle,
-} from "react-resizable-panels"
-
+import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const ResizablePanelGroup = ({

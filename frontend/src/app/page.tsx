@@ -6,9 +6,24 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Shield, TrendingUp, Users, FileText, AlertCircle, CheckCircle, Scale, PiggyBank, Heart, ChevronRight, Briefcase, Info } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useContent } from '@/hooks/useContent';
 
 export default function LandingPage() {
   const router = useRouter();
+
+  // Dynamic Content
+  const { content: landingContent, loading: contentLoading } = useContent('landing', 'main', {
+    hero: {
+      title: 'Votre avenir financier commence ici',
+      subtitle: 'Que vous cherchiez à protéger votre famille ou à bâtir une carrière dans les services financiers, nous avons une solution pour vous.',
+      bg_image: 'https://images.unsplash.com/photo-1721995432582-b0a486848fca?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBhcmNoaXRlY3R1cmUlMjBtaW5pbWFsaXN0JTIwYmx1ZSUyMGFic3RyYWN0fGVufDB8fHx8MTc3Mzg3NzAyOXww&ixlib=rb-4.1.0&q=85'
+    },
+    stats: {
+      years: '45 ans',
+      families: '8M+',
+      list: 'NYSE'
+    }
+  });
 
   // Form states
   const [clientForm, setClientForm] = useState({
@@ -101,7 +116,7 @@ ${repForm.message}`;
       <section 
         className="relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden bg-cover bg-center"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1721995432582-b0a486848fca?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBhcmNoaXRlY3R1cmUlMjBtaW5pbWFsaXN0JTIwYmx1ZSUyMGFic3RyYWN0fGVufDB8fHx8MTc3Mzg3NzAyOXww&ixlib=rb-4.1.0&q=85)'
+          backgroundImage: `url(${landingContent.hero?.bg_image})`
         }}
       >
         <div className="absolute inset-0 bg-slate-900/80 z-0" />
@@ -129,13 +144,12 @@ ${repForm.message}`;
               🏆 Accrédité AMF — Québec
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
-              Votre avenir financier <br/>
-              commence ici
+            <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight whitespace-pre-line">
+              {landingContent.hero?.title}
             </h1>
 
             <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-2xl leading-relaxed">
-              Que vous cherchiez à protéger votre famille ou à bâtir une carrière dans les services financiers, nous avons une solution pour vous.
+              {landingContent.hero?.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 mb-16">
@@ -159,15 +173,15 @@ ${repForm.message}`;
             {/* Trust Stats */}
             <div className="grid grid-cols-3 gap-6 pt-10 border-t border-slate-700/50 max-w-xl">
               <div>
-                <p className="text-3xl font-black text-white mb-1">45 ans</p>
+                <p className="text-3xl font-black text-white mb-1">{landingContent.stats?.years}</p>
                 <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold">d'expertise</p>
               </div>
               <div>
-                <p className="text-3xl font-black text-white mb-1">8M+</p>
+                <p className="text-3xl font-black text-white mb-1">{landingContent.stats?.families}</p>
                 <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold">familles aidées</p>
               </div>
               <div>
-                <p className="text-3xl font-black text-white mb-1">NYSE</p>
+                <p className="text-3xl font-black text-white mb-1">{landingContent.stats?.list}</p>
                 <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold">S&P 500 listé</p>
               </div>
             </div>
