@@ -139,10 +139,6 @@ ${repForm.message}`;
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-10">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B] font-semibold text-sm mb-8">
-              <Shield className="w-4 h-4" />
-              🏆 Accrédité AMF — Québec
-            </div>
             
             <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight whitespace-pre-line">
               {landingContent.hero?.title}
