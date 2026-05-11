@@ -1,46 +1,51 @@
 'use client';
 
 import React from 'react';
-import LegalPageLayout from '@/components/LegalPageLayout';
+import ModernLegalLayout from '@/components/ModernLegalLayout';
 import { useContent } from '@/hooks/useContent';
 
 export default function PrivacyPolicyPage() {
   const { content, loading } = useContent('privacy', 'full', {
-    title: 'Politique de confidentialité',
-    last_updated: '9 mai 2025',
-    content: `
-      <h2>1. RESPONSABLE DE LA PROTECTION DES RENSEIGNEMENTS PERSONNELS</h2>
-      <p>Conformément à la Loi 25 du Québec, un responsable de la protection des renseignements personnels a été désigné au sein de notre organisation.</p>
-      <p>Pour toute question concernant la protection de vos renseignements personnels, vous pouvez nous contacter:</p>
-      <p>📧 Email: <a href="mailto:planifier@konektegroup.com" class="text-blue-400 hover:underline">planifier@konektegroup.com</a></p>
-      
-      <h2>2. RENSEIGNEMENTS COLLECTÉS</h2>
-      <p>Nous collectons uniquement les renseignements nécessaires à la prestation de nos services.</p>
-      <ul>
-        <li>Informations d'identification (Nom, Email, Téléphone)</li>
-        <li>Informations financières générales</li>
-        <li>Informations de navigation</li>
-      </ul>
-    `
+    hero: {
+      tag: 'Document légal',
+      title: 'Politique de confidentialité',
+      description: 'Vos renseignements personnels sont protégés conformément à la Loi 25 du Québec et à la législation fédérale applicable.',
+      meta: { effectiveDate: '1er janvier 2024', lastUpdate: '11 mai 2025', version: '2.1' }
+    },
+    sections: [
+      { id: 's1', number: '1', title: "Identification de l'entreprise responsable", content: `<p>La présente Politique de confidentialité est publiée par <strong>Konekte Group</strong>, exploitant la plateforme <strong>Planify</strong> accessible à l'adresse <em>planifier.konektegroup.com</em>.</p><div class="card"><div class="card-title">Responsable de la protection des renseignements personnels (RPRP)</div><p style="margin:0">Conformément à la <em>Loi modernisant des dispositions législatives en matière de protection des renseignements personnels</em> (Loi 25), Konekte Group a désigné un Responsable de la protection des renseignements personnels. Ses coordonnées figurent à la section 13 de la présente politique.</p></div><p>Nos représentants sont des travailleurs autonomes accrédités par l'<strong>Autorité des marchés financiers (AMF) du Québec</strong>. À ce titre, la collecte et le traitement de certains renseignements sont également soumis aux obligations réglementaires de l'AMF.</p>` },
+      { id: 's2', number: '2', title: "Portée de la politique", content: `<p>Cette politique s'applique à toute personne qui :</p><ul><li>Visite le site Web <em>planifier.konektegroup.com</em> et ses sous-pages ;</li><li>Remplit un formulaire de prise de contact, de consultation ou d'inscription ;</li><li>Communique par courriel, téléphone ou tout autre canal avec nos représentants ou notre équipe administrative ;</li><li>Utilise la plateforme CRM Planify en tant que représentant accrédité.</li></ul><p>Elle s'applique dans le respect des lois suivantes :</p><ul><li><strong>Loi 25 (Québec)</strong> — Loi modernisant des dispositions législatives en matière de protection des renseignements personnels ;</li><li><strong>Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE)</strong> — Canada ;</li><li>Règlements applicables de l'<strong>AMF du Québec</strong> ;</li><li>Toute autre loi provinciale ou fédérale pertinente.</li></ul>` },
+      { id: 's3', number: '3', title: "Renseignements personnels collectés", content: `<p>Nous collectons uniquement les renseignements nécessaires aux finalités déclarées (<em>principe de minimisation</em>). Voici les catégories de renseignements susceptibles d'être collectés :</p><h3>3.1 Renseignements d'identification</h3><ul><li>Nom complet, prénom</li><li>Adresse postale</li><li>Numéro de téléphone</li><li>Adresse courriel</li><li>Date de naissance (si requis pour un produit financier)</li></ul><h3>3.2 Renseignements financiers et professionnels</h3><ul><li>Situation financière générale (revenus, dettes, actifs) — fournie volontairement lors d'une consultation</li><li>Objectifs financiers et de retraite</li><li>Numéro de permis AMF (pour les représentants)</li><li>Informations relatives aux produits souscrits</li></ul><h3>3.3 Renseignements techniques (navigation)</h3><ul><li>Adresse IP</li><li>Type de navigateur et système d'exploitation</li><li>Pages visitées, durée de la visite, liens cliqués</li><li>Source de trafic (ex. : référence Google, réseaux sociaux)</li></ul><div class="alert"><strong>Important :</strong> Nous ne collectons jamais de numéros d'assurance sociale, de données bancaires complètes, ni de renseignements médicaux sans consentement explicite préalable et justification légale.</div>` },
+      { id: 's4', number: '4', title: "Finalités et utilisation", content: `<p>Vos renseignements sont utilisés aux fins suivantes :</p><div class="table-wrap"><table><thead><tr><th>Finalité</th><th>Base légale</th><th>Exemples concrets</th></tr></thead><tbody><tr><td>Prestation des services financiers</td><td>Consentement / obligation contractuelle</td><td>Analyse financière, recommandation de produits, souscription</td></tr><tr><td>Gestion de la relation client</td><td>Consentement / intérêt légitime</td><td>Suivi de dossier, rappels de rendez-vous</td></tr><tr><td>Communications marketing</td><td>Consentement exprès</td><td>Infolettres, offres de service, webinaires</td></tr><tr><td>Conformité réglementaire AMF</td><td>Obligation légale</td><td>Conservation des dossiers, audits</td></tr><tr><td>Amélioration de la plateforme</td><td>Intérêt légitime</td><td>Analyse de l'utilisation, correction de bogues</td></tr><tr><td>Prévention de la fraude</td><td>Obligation légale / intérêt légitime</td><td>Détection d'activités suspectes</td></tr><tr><td>Recrutement de représentants</td><td>Consentement</td><td>Traitement des candidatures, formation AMF</td></tr></tbody></table></div>` },
+      { id: 's5', number: '5', title: "Divulgation à des tiers", content: `<p>Nous pouvons partager vos renseignements avec les catégories de tiers suivantes, dans la mesure strictement nécessaire :</p><h3>5.1 Partenaires de service</h3><ul><li><strong>Assureurs et fournisseurs de fonds</strong> — pour la souscription et l'administration de produits financiers ;</li><li><strong>Fournisseurs de technologie</strong> — hébergement, CRM, gestion des courriels ;</li><li><strong>Processeurs de paiement</strong> — pour le traitement des frais d'inscription.</li></ul><h3>5.3 Ce que nous ne faisons jamais</h3><div class="alert"><strong>Nous ne vendons, louons ni échangeons jamais vos renseignements personnels</strong> à des fins commerciales avec des entreprises tierces.</div>` },
+      { id: 's6', number: '6', title: "Transferts hors Québec", content: `<p>Certains de nos fournisseurs technologiques peuvent traiter des données sur des serveurs situés hors du Québec (notamment en Ontario, aux États-Unis ou en Europe). Avant tout transfert, nous effectuons une <strong>évaluation des facteurs relatifs à la vie privée (EFVP)</strong>.</p><div class="alert alert-blue"><strong>Droit d'information :</strong> Vous pouvez nous demander la liste des pays où vos renseignements peuvent être transférés.</div>` },
+      { id: 's7', number: '7', title: "Cookies et technologies", content: `<p>Notre site utilise des témoins (<em>cookies</em>) et technologies similaires.</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Finalité</th><th>Durée</th><th>Désactivable</th></tr></thead><tbody><tr><td><strong>Essentiels</strong></td><td>Fonctionnement du site</td><td>Session</td><td>Non</td></tr><tr><td><strong>Analytiques</strong></td><td>Statistiques (ex. : Google Analytics)</td><td>13 mois</td><td>Oui</td></tr><tr><td><strong>Fonctionnels</strong></td><td>Mémorisation des préférences</td><td>12 mois</td><td>Oui</td></tr><tr><td><strong>Marketing</strong></td><td>Publicités personnalisées</td><td>24 mois</td><td>Oui</td></tr></tbody></table></div>` },
+      { id: 's8', number: '8', title: "Conservation et destruction", content: `<p>Nous conservons vos renseignements aussi longtemps que nécessaire pour les finalités déclarées :</p><div class="table-wrap"><table><thead><tr><th>Catégorie de données</th><th>Durée</th><th>Fondement</th></tr></thead><tbody><tr><td>Dossiers clients actifs</td><td>7 ans</td><td>AMF / fiscalité</td></tr><tr><td>Dossiers de consultation</td><td>3 ans</td><td>Prescription civile</td></tr><tr><td>Candidatures representatives</td><td>6 mois</td><td>RH</td></tr></tbody></table></div>` },
+      { id: 's9', number: '9', title: "Mesures de sécurité", content: `<div class="rights-grid"><div class="right-card"><div class="right-icon">🔐</div><div class="right-title">Chiffrement</div><div class="right-desc">TLS 1.3 et AES-256.</div></div><div class="right-card"><div class="right-icon">🛡️</div><div class="right-title">Contrôle d'accès</div><div class="right-desc">Principe du moindre privilège.</div></div><div class="right-card"><div class="right-icon">🚨</div><div class="right-title">Incidents</div><div class="right-desc">Procédure de réponse aux incidents Loi 25.</div></div></div>` },
+      { id: 's10', number: '10', title: "Droits des personnes", content: `<div class="rights-grid"><div class="right-card"><div class="right-icon">👁️</div><div class="right-title">Accès</div><div class="right-desc">Consulter vos données.</div></div><div class="right-card"><div class="right-icon">✏️</div><div class="right-title">Rectification</div><div class="right-desc">Corriger les erreurs.</div></div><div class="right-card"><div class="right-icon">🚫</div><div class="right-title">Retrait</div><div class="right-desc">Retirer votre consentement.</div></div></div><div class="alert alert-blue"><strong>Recours externes :</strong> Contactez la CAI (www.cai.gouv.qc.ca) en cas de litige.</div>` },
+      { id: 's11', number: '11', title: "Mineurs", content: `<p>Nos services sont destinés exclusivement aux personnes âgées de <strong>18 ans et plus</strong>.</p>` },
+      { id: 's12', number: '12', title: "Mises à jour", content: `<p>Nous nous réservons le droit de modifier la présente politique. En cas de modification substantielle, un avis sera publié sur la page d'accueil.</p>` },
+      { id: 's13', number: '13', title: "Contact et plaintes", content: `<p>Pour toute question, contactez notre Responsable de la protection des renseignements personnels via les coordonnées ci-dessous.</p>` }
+    ],
+    contactBox: {
+      company: 'Konekte Group',
+      email: 'planifier@konektegroup.com',
+      website: 'https://planifier.konektegroup.com',
+      responseDelay: '30 jours calendaires'
+    }
   });
 
   if (loading) return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    <div className="min-h-screen bg-[#faf8f4] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d1f3c]"></div>
     </div>
   );
 
   return (
-    <LegalPageLayout
-      title={content.title}
-      icon="🔒"
-      lastUpdated={content.last_updated}
-      badge="Conforme à la Loi 25 du Québec"
-    >
-      <div
-        className="prose prose-invert max-w-none prose-slate px-4 md:px-0"
-        dangerouslySetInnerHTML={{ __html: content.content }}
-      />
-    </LegalPageLayout>
+    <ModernLegalLayout
+      hero={content.hero}
+      sections={content.sections}
+      contactBox={content.contactBox}
+    />
   );
 }

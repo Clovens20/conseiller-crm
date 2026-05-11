@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Loader2, Save, Eye, Globe, Shield, FileText, BookOpen, Heart, TrendingUp, PiggyBank, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function CMSPage() {
   const [loading, setLoading] = useState(true);
@@ -154,31 +155,66 @@ export default function CMSPage() {
       } 
     },
     legal: {
-      privacy: `
-        <h2>1. RESPONSABLE DE LA PROTECTION DES RENSEIGNEMENTS PERSONNELS</h2>
-        <p>Conformément à la Loi 25 du Québec, un responsable de la protection des renseignements personnels a été désigné au sein de notre organisation.</p>
-        <p>Pour toute question concernant la protection de vos renseignements personnels, vous pouvez nous contacter:</p>
-        <p>📧 Email: <a href="mailto:planifier@konektegroup.com" class="text-blue-400 hover:underline">planifier@konektegroup.com</a></p>
-        
-        <h2>2. RENSEIGNEMENTS COLLECTÉS</h2>
-        <p>Nous collectons uniquement les renseignements nécessaires à la prestation de nos services.</p>
-        <ul>
-          <li>Informations d'identification (Nom, Email, Téléphone)</li>
-          <li>Informations financières générales</li>
-          <li>Informations de navigation</li>
-        </ul>
-      `,
-      terms: `
-        <h2>1. ACCEPTATION DES CONDITIONS</h2>
-        <p>En accédant à planifier.konektegroup.com et en utilisant nos services, vous acceptez d'être lié par les présentes conditions d'utilisation.</p>
-        
-        <h2>2. DESCRIPTION DES SERVICES</h2>
-        <p>Planify est une plateforme de gestion de la relation client (CRM) destinée aux représentants autonomes accrédités AMF au Québec.</p>
-        <p><strong>Important:</strong> Planify n'est pas un conseiller financier. Nous mettons en relation des clients avec des représentants accrédités AMF.</p>
-        
-        <h2>3. STATUT DES REPRÉSENTANTS</h2>
-        <p>Les représentants utilisant notre plateforme sont des TRAVAILLEURS AUTONOMES indépendants.</p>
-      `
+      privacy: {
+        hero: {
+          tag: 'Document légal',
+          title: 'Politique de confidentialité',
+          description: 'Vos renseignements personnels sont protégés conformément à la Loi 25 du Québec et à la législation fédérale applicable.',
+          meta: { effectiveDate: '1er janvier 2024', lastUpdate: '11 mai 2025', version: '2.1' }
+        },
+        sections: [
+          { id: 's1', number: '1', title: "Identification de l'entreprise responsable", content: `<p>La présente Politique de confidentialité est publiée par <strong>Konekte Group</strong>, exploitant la plateforme <strong>Planify</strong> accessible à l'adresse <em>planifier.konektegroup.com</em>.</p><div class="card"><div class="card-title">Responsable de la protection des renseignements personnels (RPRP)</div><p style="margin:0">Conformément à la <em>Loi modernisant des dispositions législatives en matière de protection des renseignements personnels</em> (Loi 25), Konekte Group a désigné un Responsable de la protection des renseignements personnels. Ses coordonnées figurent à la section 13 de la présente politique.</p></div><p>Nos représentants sont des travailleurs autonomes accrédités par l'<strong>Autorité des marchés financiers (AMF) du Québec</strong>. À ce titre, la collecte et le traitement de certains renseignements sont également soumis aux obligations réglementaires de l'AMF.</p>` },
+          { id: 's2', number: '2', title: "Portée de la politique", content: `<p>Cette politique s'applique à toute personne qui :</p><ul><li>Visite le site Web <em>planifier.konektegroup.com</em> et ses sous-pages ;</li><li>Remplit un formulaire de prise de contact, de consultation ou d'inscription ;</li><li>Communique par courriel, téléphone ou tout autre canal avec nos représentants ou notre équipe administrative ;</li><li>Utilise la plateforme CRM Planify en tant que représentant accrédité.</li></ul><p>Elle s'applique dans le respect des lois suivantes :</p><ul><li><strong>Loi 25 (Québec)</strong> — Loi modernisant des dispositions législatives en matière de protection des renseignements personnels ;</li><li><strong>Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE)</strong> — Canada ;</li><li>Règlements applicables de l'<strong>AMF du Québec</strong> ;</li><li>Toute autre loi provinciale ou fédérale pertinente.</li></ul>` },
+          { id: 's3', number: '3', title: "Renseignements personnels collectés", content: `<p>Nous collectons uniquement les renseignements nécessaires aux finalités déclarées (<em>principe de minimisation</em>). Voici les catégories de renseignements susceptibles d'être collectés :</p><h3>3.1 Renseignements d'identification</h3><ul><li>Nom complet, prénom</li><li>Adresse postale</li><li>Numéro de téléphone</li><li>Adresse courriel</li><li>Date de naissance (si requis pour un produit financier)</li></ul><h3>3.2 Renseignements financiers et professionnels</h3><ul><li>Situation financière générale (revenus, dettes, actifs) — fournie volontairement lors d'une consultation</li><li>Objectifs financiers et de retraite</li><li>Numéro de permis AMF (pour les représentants)</li><li>Informations relatives aux produits souscrits</li></ul><h3>3.3 Renseignements techniques (navigation)</h3><ul><li>Adresse IP</li><li>Type de navigateur et système d'exploitation</li><li>Pages visitées, durée de la visite, liens cliqués</li><li>Source de trafic (ex. : référence Google, réseaux sociaux)</li></ul><div class="alert"><strong>Important :</strong> Nous ne collectons jamais de numéros d'assurance sociale, de données bancaires complètes, ni de renseignements médicaux sans consentement explicite préalable et justification légale.</div>` },
+          { id: 's4', number: '4', title: "Finalités et utilisation", content: `<p>Vos renseignements sont utilisés aux fins suivantes :</p><div class="table-wrap"><table><thead><tr><th>Finalité</th><th>Base légale</th><th>Exemples concrets</th></tr></thead><tbody><tr><td>Prestation des services financiers</td><td>Consentement / obligation contractuelle</td><td>Analyse financière, recommandation de produits, souscription</td></tr><tr><td>Gestion de la relation client</td><td>Consentement / intérêt légitime</td><td>Suivi de dossier, rappels de rendez-vous</td></tr><tr><td>Communications marketing</td><td>Consentement exprès</td><td>Infolettres, offres de service, webinaires</td></tr><tr><td>Conformité réglementaire AMF</td><td>Obligation légale</td><td>Conservation des dossiers, audits</td></tr><tr><td>Amélioration de la plateforme</td><td>Intérêt légitime</td><td>Analyse de l'utilisation, correction de bogues</td></tr><tr><td>Prévention de la fraude</td><td>Obligation légale / intérêt légitime</td><td>Détection d'activités suspectes</td></tr><tr><td>Recrutement de représentants</td><td>Consentement</td><td>Traitement des candidatures, formation AMF</td></tr></tbody></table></div>` },
+          { id: 's5', number: '5', title: "Divulgation à des tiers", content: `<p>Nous pouvons partager vos renseignements avec les catégories de tiers suivantes, dans la mesure strictement nécessaire :</p><h3>5.1 Partenaires de service</h3><ul><li><strong>Assureurs et fournisseurs de fonds</strong> — pour la souscription et l'administration de produits financiers ;</li><li><strong>Fournisseurs de technologie</strong> — hébergement, CRM, gestion des courriels ;</li><li><strong>Processeurs de paiement</strong> — pour le traitement des frais d'inscription.</li></ul><h3>5.3 Ce que nous ne faisons jamais</h3><div class="alert"><strong>Nous ne vendons, louons ni échangeons jamais vos renseignements personnels</strong> à des fins commerciales avec des entreprises tierces.</div>` },
+          { id: 's6', number: '6', title: "Transferts hors Québec", content: `<p>Certains de nos fournisseurs technologiques peuvent traiter des données sur des serveurs situés hors du Québec (notamment en Ontario, aux États-Unis ou en Europe). Avant tout transfert, nous effectuons une <strong>évaluation des facteurs relatifs à la vie privée (EFVP)</strong>.</p><div class="alert alert-blue"><strong>Droit d'information :</strong> Vous pouvez nous demander la liste des pays où vos renseignements peuvent être transférés.</div>` },
+          { id: 's7', number: '7', title: "Cookies et technologies", content: `<p>Notre site utilise des témoins (<em>cookies</em>) et technologies similaires.</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Finalité</th><th>Durée</th><th>Désactivable</th></tr></thead><tbody><tr><td><strong>Essentiels</strong></td><td>Fonctionnement du site</td><td>Session</td><td>Non</td></tr><tr><td><strong>Analytiques</strong></td><td>Statistiques (ex. : Google Analytics)</td><td>13 mois</td><td>Oui</td></tr><tr><td><strong>Fonctionnels</strong></td><td>Mémorisation des préférences</td><td>12 mois</td><td>Oui</td></tr><tr><td><strong>Marketing</strong></td><td>Publicités personnalisées</td><td>24 mois</td><td>Oui</td></tr></tbody></table></div>` },
+          { id: 's8', number: '8', title: "Conservation et destruction", content: `<p>Nous conservons vos renseignements aussi longtemps que nécessaire pour les finalités déclarées :</p><div class="table-wrap"><table><thead><tr><th>Catégorie de données</th><th>Durée</th><th>Fondement</th></tr></thead><tbody><tr><td>Dossiers clients actifs</td><td>7 ans</td><td>AMF / fiscalité</td></tr><tr><td>Dossiers de consultation</td><td>3 ans</td><td>Prescription civile</td></tr><tr><td>Candidatures representatives</td><td>6 mois</td><td>RH</td></tr></tbody></table></div>` },
+          { id: 's9', number: '9', title: "Mesures de sécurité", content: `<div class="rights-grid"><div class="right-card"><div class="right-icon">🔐</div><div class="right-title">Chiffrement</div><div class="right-desc">TLS 1.3 et AES-256.</div></div><div class="right-card"><div class="right-icon">🛡️</div><div class="right-title">Contrôle d'accès</div><div class="right-desc">Principe du moindre privilège.</div></div><div class="right-card"><div class="right-icon">🚨</div><div class="right-title">Incidents</div><div class="right-desc">Procédure de réponse aux incidents Loi 25.</div></div></div>` },
+          { id: 's10', number: '10', title: "Droits des personnes", content: `<div class="rights-grid"><div class="right-card"><div class="right-icon">👁️</div><div class="right-title">Accès</div><div class="right-desc">Consulter vos données.</div></div><div class="right-card"><div class="right-icon">✏️</div><div class="right-title">Rectification</div><div class="right-desc">Corriger les erreurs.</div></div><div class="right-card"><div class="right-icon">🚫</div><div class="right-title">Retrait</div><div class="right-desc">Retirer votre consentement.</div></div></div><div class="alert alert-blue"><strong>Recours externes :</strong> Contactez la CAI (www.cai.gouv.qc.ca) en cas de litige.</div>` },
+          { id: 's11', number: '11', title: "Mineurs", content: `<p>Nos services sont destinés exclusivement aux personnes âgées de <strong>18 ans et plus</strong>.</p>` },
+          { id: 's12', number: '12', title: "Mises à jour", content: `<p>Nous nous réservons le droit de modifier la présente politique. En cas de modification substantielle, un avis sera publié sur la page d'accueil.</p>` },
+          { id: 's13', number: '13', title: "Contact et plaintes", content: `<p>Pour toute question, contactez notre Responsable de la protection des renseignements personnels via les coordonnées ci-dessous.</p>` }
+        ],
+        contactBox: {
+          company: 'Konekte Group',
+          email: 'planifier@konektegroup.com',
+          website: 'https://planifier.konektegroup.com',
+          responseDelay: '30 jours calendaires'
+        }
+      },
+      terms: {
+        hero: {
+          tag: 'Document légal',
+          title: "Conditions d'utilisation",
+          description: "En utilisant la plateforme Planify, vous acceptez les présentes conditions. Veuillez les lire attentivement avant toute utilisation.",
+          meta: { effectiveDate: '1er janvier 2024', lastUpdate: '11 mai 2025', version: '2.1' }
+        },
+        sections: [
+          { id: 's1', number: '1', title: "Acceptation des conditions", content: `<p>En accédant à la Plateforme, vous déclarez avoir lu, compris et accepté sans réserve les présentes Conditions.</p><div class="alert"><strong>Si vous n'acceptez pas ces conditions, veuillez cesser immédiatement d'utiliser la Plateforme.</strong></div>` },
+          { id: 's2', number: '2', title: "Définitions", content: `<div class="table-wrap"><table><thead><tr><th>Terme</th><th>Définition</th></tr></thead><tbody><tr><td><strong>Plateforme</strong></td><td>Le site Web et ses fonctionnalités CRM.</td></tr><tr><td><strong>Représentant</strong></td><td>Travailleur autonome accrédité AMF.</td></tr></tbody></table></div>` },
+          { id: 's3', number: '3', title: "Description des services", content: `<div class="two-col"><div class="col-card"><div class="col-card-title">🏦 Pour les Clients</div><ul><li>Mise en relation AMF</li><li>Information produits</li></ul></div><div class="col-card"><div class="col-card-title">💼 Pour les Représentants</div><ul><li>Plateforme CRM</li><li>Outils de suivi</li></ul></div></div>` },
+          { id: 's4', number: '4', title: "Inscription et compte", content: `<p>Vous êtes responsable de la confidentialité de vos identifiants.</p>` },
+          { id: 's5', number: '5', title: "Utilisation acceptable", content: `<div class="alert alert-red"><strong>Toute violation peut entraîner la suspension immédiate du compte.</strong></div>` },
+          { id: 's6', number: '6', title: "Services financiers", content: `<div class="highlight-box"><h3>⚠️ Ce que la Plateforme n'est pas</h3><p>Planify est une plateforme de mise en relation. Elle ne constitue pas un conseil financier personnalisé.</p></div>` },
+          { id: 's7', number: '7', title: "Propriété intellectuelle", content: `<p>Le contenu est la propriété exclusive de Konekte Group.</p>` },
+          { id: 's8', number: '8', title: "Confidentialité", content: `<p>Voir notre Politique de confidentialité.</p>` },
+          { id: 's9', number: '9', title: "Limitation de responsabilité", content: `<p>La plateforme est fournie "telle quelle". Konekte n'est pas responsable des actes des représentants indépendants.</p>` },
+          { id: 's10', number: '10', title: "Indemnisation", content: `<p>Vous acceptez d'indemniser Konekte Group pour toute violation des conditions.</p>` },
+          { id: 's11', number: '11', title: "Services tiers", content: `<p>Konekte n'exerce aucun contrôle sur les sites tiers (assureurs, etc.).</p>` },
+          { id: 's12', number: '12', title: "Modification et résiliation", content: `<p>Konekte peut suspendre votre accès en cas de violation ou de retrait de permis AMF.</p>` },
+          { id: 's13', number: '13', title: "Droit applicable", content: `<p>Lois de la province de Québec. District de Montréal.</p>` },
+          { id: 's14', number: '14', title: "Dispositions générales", content: `<p>Les présentes constituent l'intégralité de l'accord.</p>` },
+          { id: 's15', number: '15', title: "Contact", content: `<p>Pour toute question, contactez notre service juridique.</p>` }
+        ],
+        contactBox: {
+          company: 'Konekte Group',
+          email: 'planifier@konektegroup.com',
+          website: 'https://planifier.konektegroup.com',
+          responseDelay: 'N/A'
+        }
+      }
     }
   };
 
@@ -212,8 +248,8 @@ export default function CMSPage() {
         const priv = data.find(d => d.page_slug === 'privacy' && d.section_id === 'full');
         const term = data.find(d => d.page_slug === 'terms' && d.section_id === 'full');
         setLegal({
-          privacy: priv?.content?.content || DEFAULTS.legal.privacy,
-          terms: term?.content?.content || DEFAULTS.legal.terms
+          privacy: priv ? { ...DEFAULTS.legal.privacy, ...priv.content } : DEFAULTS.legal.privacy,
+          terms: term ? { ...DEFAULTS.legal.terms, ...term.content } : DEFAULTS.legal.terms
         });
       }
     } catch (err) { console.error(err); } finally { setLoading(false); }
@@ -227,6 +263,80 @@ export default function CMSPage() {
       toast.success(`Contenu mis à jour !`);
     } catch (err: any) { toast.error('Erreur : ' + err.message); } finally { setSaving(false); }
   };
+
+  const LegalEditor = ({ data, setData, slug, saving, onSave }: any) => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider">Configuration Hero</h3>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Tag</Label><Input className="bg-slate-900 border-slate-700" value={data.hero?.tag} onChange={e => setData({...data, hero: {...data.hero, tag: e.target.value}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Titre</Label><Input className="bg-slate-900 border-slate-700" value={data.hero?.title} onChange={e => setData({...data, hero: {...data.hero, title: e.target.value}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Description</Label><textarea className="bg-slate-900 border-slate-700 rounded-lg p-3 text-sm min-h-[80px]" value={data.hero?.description} onChange={e => setData({...data, hero: {...data.hero, description: e.target.value}})} /></div>
+        </div>
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider">Métadonnées</h3>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Entrée en vigueur</Label><Input className="bg-slate-900 border-slate-700" value={data.hero?.meta?.effectiveDate} onChange={e => setData({...data, hero: {...data.hero, meta: {...data.hero.meta, effectiveDate: e.target.value}}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Dernière mise à jour</Label><Input className="bg-slate-900 border-slate-700" value={data.hero?.meta?.lastUpdate} onChange={e => setData({...data, hero: {...data.hero, meta: {...data.hero.meta, lastUpdate: e.target.value}}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Version</Label><Input className="bg-slate-900 border-slate-700" value={data.hero?.meta?.version} onChange={e => setData({...data, hero: {...data.hero, meta: {...data.hero.meta, version: e.target.value}}})} /></div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider">Sections de contenu</h3>
+        <Accordion type="single" collapsible className="w-full space-y-3">
+          {data.sections?.map((section: any, i: number) => (
+            <AccordionItem key={i} value={`section-${i}`} className="border border-slate-700 bg-slate-900/30 rounded-xl px-4">
+              <AccordionTrigger className="text-white font-medium hover:no-underline flex gap-3">
+                <span className="bg-blue-600/20 text-blue-400 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold">{section.number}</span>
+                {section.title || "Nouvelle section"}
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pb-4">
+                <div className="grid grid-cols-[60px_1fr] gap-3">
+                  <div><Label className="text-[10px] font-black text-slate-400">N°</Label><Input className="bg-slate-900 border-slate-700 text-center" value={section.number} onChange={e => { const ns = [...data.sections]; ns[i].number = e.target.value; setData({...data, sections: ns}); }} /></div>
+                  <div><Label className="text-[10px] font-black text-slate-400">Titre</Label><Input className="bg-slate-900 border-slate-700" value={section.title} onChange={e => { const ns = [...data.sections]; ns[i].title = e.target.value; setData({...data, sections: ns}); }} /></div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contenu</Label>
+                  <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-700">
+                    <RichTextEditor 
+                      content={section.content} 
+                      onChange={(html: string) => {
+                        const ns = [...data.sections];
+                        ns[i].content = html;
+                        setData({...data, sections: ns});
+                      }}
+                      placeholder="Rédigez le contenu de cette section..."
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-400/10" onClick={() => { const ns = [...data.sections]; ns.splice(i, 1); setData({...data, sections: ns}); }}><Trash2 className="w-4 h-4 mr-2" /> Supprimer cette section</Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+        <Button variant="outline" className="w-full border-dashed border-slate-600 text-slate-400 py-6" onClick={() => { const ns = [...(data.sections || [])]; ns.push({ id: `s${ns.length + 1}`, number: (ns.length + 1).toString(), title: 'Nouvelle section', content: '<p>Contenu...</p>' }); setData({...data, sections: ns}); }}><Plus className="w-4 h-4 mr-2" /> Ajouter une section</Button>
+      </div>
+
+      <div className="space-y-4 pt-4 border-t border-slate-700">
+        <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider">Bloc Contact (RPRP)</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Entreprise</Label><Input className="bg-slate-900 border-slate-700" value={data.contactBox?.company} onChange={e => setData({...data, contactBox: {...data.contactBox, company: e.target.value}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Courriel</Label><Input className="bg-slate-900 border-slate-700" value={data.contactBox?.email} onChange={e => setData({...data, contactBox: {...data.contactBox, email: e.target.value}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Site Web</Label><Input className="bg-slate-900 border-slate-700" value={data.contactBox?.website} onChange={e => setData({...data, contactBox: {...data.contactBox, website: e.target.value}})} /></div>
+          <div className="grid gap-2"><Label className="text-[10px] font-black text-slate-400">Délai de réponse</Label><Input className="bg-slate-900 border-slate-700" value={data.contactBox?.responseDelay} onChange={e => setData({...data, contactBox: {...data.contactBox, responseDelay: e.target.value}})} /></div>
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-6">
+        <Button disabled={saving} onClick={onSave} className="bg-blue-600 hover:bg-blue-500 font-bold px-10 py-6 rounded-2xl">
+          {saving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />} 
+          Enregistrer {slug === 'privacy' ? 'la Politique' : 'les Conditions'}
+        </Button>
+      </div>
+    </div>
+  );
 
   const ServiceEditor = ({ data, setData, slug }: any) => (
     <div className="space-y-6">
@@ -245,8 +355,8 @@ export default function CMSPage() {
           <AccordionTrigger className="text-white font-bold hover:no-underline">Introduction</AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <div className="grid gap-2"><Label className="text-slate-400 uppercase text-[10px] font-black">Titre Intro</Label><Input className="bg-slate-900 border-slate-700" value={data.intro?.heading} onChange={e => setData({...data, intro: {...data.intro, heading: e.target.value}})} /></div>
-            <div className="grid gap-2"><Label className="text-slate-400 uppercase text-[10px] font-black">Paragraphe 1</Label><textarea className="bg-slate-900 border-slate-700 rounded-lg p-3 text-sm min-h-[100px]" value={data.intro?.p1} onChange={e => setData({...data, intro: {...data.intro, p1: e.target.value}})} /></div>
-            <div className="grid gap-2"><Label className="text-slate-400 uppercase text-[10px] font-black">Paragraphe 2</Label><textarea className="bg-slate-900 border-slate-700 rounded-lg p-3 text-sm min-h-[100px]" value={data.intro?.p2} onChange={e => setData({...data, intro: {...data.intro, p2: e.target.value}})} /></div>
+            <div className="space-y-2"><Label className="text-slate-400 uppercase text-[10px] font-black">Paragraphe 1</Label><RichTextEditor content={data.intro?.p1} onChange={html => setData({...data, intro: {...data.intro, p1: html}})} /></div>
+            <div className="space-y-2"><Label className="text-slate-400 uppercase text-[10px] font-black">Paragraphe 2</Label><RichTextEditor content={data.intro?.p2} onChange={html => setData({...data, intro: {...data.intro, p2: html}})} /></div>
           </AccordionContent>
         </AccordionItem>
         {/* BÉNÉFICES */}
@@ -287,7 +397,7 @@ export default function CMSPage() {
               <div key={i} className="p-4 bg-slate-800 rounded-lg border border-slate-700 space-y-3 relative">
                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-red-400" onClick={() => { const ni = [...data.faqs.items]; ni.splice(i, 1); setData({...data, faqs: {...data.faqs, items: ni}}); }}><Trash2 className="w-4 h-4" /></Button>
                 <div><Label className="text-[10px] font-black">Question</Label><Input className="bg-slate-900 border-slate-700" value={faq.question} onChange={e => { const ni = [...data.faqs.items]; ni[i].question = e.target.value; setData({...data, faqs: {...data.faqs, items: ni}}); }} /></div>
-                <div><Label className="text-[10px] font-black">Réponse</Label><textarea className="bg-slate-900 border-slate-700 rounded-lg p-3 text-sm min-h-[80px]" value={faq.answer} onChange={e => { const ni = [...data.faqs.items]; ni[i].answer = e.target.value; setData({...data, faqs: {...data.faqs, items: ni}}); }} /></div>
+                <div className="space-y-2"><Label className="text-[10px] font-black">Réponse</Label><RichTextEditor content={faq.answer} onChange={html => { const ni = [...data.faqs.items]; ni[i].answer = html; setData({...data, faqs: {...data.faqs, items: ni}}); }} /></div>
               </div>
             ))}
             <Button variant="outline" className="w-full border-dashed border-slate-600 text-slate-400" onClick={() => { const ni = [...(data.faqs?.items || [])]; ni.push({ question: 'Nouvelle question', answer: 'Réponse...' }); setData({...data, faqs: {...data.faqs, items: ni}}); }}><Plus className="w-4 h-4 mr-2" /> Ajouter une question</Button>
@@ -314,18 +424,36 @@ export default function CMSPage() {
         <TabsContent value="dettes" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={dettes} setData={setDettes} slug="elimination-dettes" /></Card></TabsContent>
         <TabsContent value="analyse" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={analyse} setData={setAnalyse} slug="analyse-financiere" /></Card></TabsContent>
         <TabsContent value="guide" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6 space-y-6"><div><Label className="text-slate-400 uppercase text-[10px] font-black">Titre</Label><Input className="bg-slate-900 border-slate-700" value={guide.hero?.title} onChange={e => setGuide({...guide, hero: {...guide.hero, title: e.target.value}})} /></div><div><Label className="text-slate-400 uppercase text-[10px] font-black">Sous-titre</Label><textarea className="bg-slate-900 border-slate-700 rounded-xl p-4 text-sm min-h-[100px]" value={guide.hero?.subtitle} onChange={e => setGuide({...guide, hero: {...guide.hero, subtitle: e.target.value}})} /></div><Button disabled={saving} onClick={() => saveSection('guide', guide)} className="bg-blue-600 hover:bg-blue-500 w-full py-6 font-bold rounded-2xl"><Save className="w-5 h-5 mr-2" /> Enregistrer Guide</Button></Card></TabsContent>
-        <TabsContent value="legal" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6 space-y-8">
-            <div className="grid gap-3">
-              <Label className="text-slate-400 uppercase text-[10px] font-black tracking-widest ml-1">Politique de Confidentialité (HTML)</Label>
-              <textarea className="bg-slate-900 border-slate-700 rounded-xl p-4 text-xs font-mono min-h-[350px] resize-y" value={legal.privacy} onChange={e => setLegal({...legal, privacy: e.target.value})} />
-              <div className="flex justify-end mt-2"><Button variant="outline" className="text-blue-400 border-blue-400/20 px-8 py-5 rounded-xl font-bold" onClick={() => saveSection('privacy', { content: legal.privacy, title: 'Politique de confidentialité', last_updated: new Date().toLocaleDateString('fr-CA') }, 'full')}>Enregistrer Politique</Button></div>
-            </div>
-            <div className="grid gap-3 border-t border-slate-700/50 pt-8">
-              <Label className="text-slate-400 uppercase text-[10px] font-black tracking-widest ml-1">Conditions d'Utilisation (HTML)</Label>
-              <textarea className="bg-slate-900 border-slate-700 rounded-xl p-4 text-xs font-mono min-h-[350px] resize-y" value={legal.terms} onChange={e => setLegal({...legal, terms: e.target.value})} />
-              <div className="flex justify-end mt-2"><Button variant="outline" className="text-blue-400 border-blue-400/20 px-8 py-5 rounded-xl font-bold" onClick={() => saveSection('terms', { content: legal.terms, title: "Conditions d'utilisation", last_updated: new Date().toLocaleDateString('fr-CA') }, 'full')}>Enregistrer Conditions</Button></div>
-            </div>
-          </Card></TabsContent>
+        <TabsContent value="legal" className="pt-4">
+          <Card className="bg-slate-800 border-slate-700 text-white p-6 space-y-8">
+            <Tabs defaultValue="privacy-edit" className="w-full">
+              <TabsList className="bg-slate-900 border-slate-700 mb-6">
+                <TabsTrigger value="privacy-edit">Politique de Confidentialité</TabsTrigger>
+                <TabsTrigger value="terms-edit">Conditions d'Utilisation</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="privacy-edit" className="space-y-6">
+                <LegalEditor 
+                  data={legal.privacy} 
+                  setData={(d: any) => setLegal({...legal, privacy: d})} 
+                  slug="privacy" 
+                  saving={saving}
+                  onSave={() => saveSection('privacy', legal.privacy, 'full')}
+                />
+              </TabsContent>
+
+              <TabsContent value="terms-edit" className="space-y-6">
+                <LegalEditor 
+                  data={legal.terms} 
+                  setData={(d: any) => setLegal({...legal, terms: d})} 
+                  slug="terms" 
+                  saving={saving}
+                  onSave={() => saveSection('terms', legal.terms, 'full')}
+                />
+              </TabsContent>
+            </Tabs>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
