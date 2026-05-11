@@ -5,6 +5,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PostHogProvider } from "@/contexts/PostHogProvider";
 import { Toaster } from "@/components/ui/sonner";
 
+import { organizationSchema } from "@/lib/schema";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,6 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="dark" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body className={`${inter.className} bg-slate-900 antialiased`}>
         <PostHogProvider>
           <AuthProvider>

@@ -34,9 +34,9 @@ export default function TermsOfServicePage() {
       lastUpdated={content.last_updated}
       badge="Veuillez lire attentivement avant d'utiliser notre plateforme"
     >
-      <div 
+      <div
         className="prose prose-invert max-w-none prose-slate px-4 md:px-0"
-        dangerouslySetInnerHTML={{ __html: content.content }} 
+        dangerouslySetInnerHTML={{ __html: content.content }}
       />
     </LegalPageLayout>
   );

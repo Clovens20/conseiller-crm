@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Shield, TrendingUp, Users, FileText, AlertCircle, CheckCircle, Scale, PiggyBank, Heart, ChevronRight, Briefcase, Info } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useContent } from '@/hooks/useContent';
+import { incrementSiteVisit } from '@/services/marketingApi';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -42,6 +43,14 @@ export default function LandingPage() {
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isRepModalOpen, setIsRepModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('contact') === 'true') {
+      setIsClientModalOpen(true);
+    }
+    incrementSiteVisit();
+  }, []);
 
   const submitClient = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,20 +270,85 @@ ${repForm.message}`;
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Shield, title: "Assurance-vie temporaire", desc: "Protection maximale pour votre famille. Simple, abordable, adapté à la classe moyenne québécoise." },
-              { icon: TrendingUp, title: "Fonds de placement", desc: "Fonds communs, fonds distincts et solutions d'investissement adaptés à vos objectifs de retraite." },
-              { icon: PiggyBank, title: "Élimination des dettes", desc: "Stratégies concrètes pour rembourser vos dettes et hypothèques plus rapidement." },
-              { icon: Heart, title: "Protection invalidité", desc: "Revenu de remplacement si vous ne pouvez plus travailler. Protégez ce qui compte le plus." },
-              { icon: FileText, title: "Analyse financière", desc: "Bilan financier complet et gratuit pour toute famille québécoise. Sans obligation." }
+              { icon: Shield, title: "Assurance-vie temporaire", desc: "Protection maximale pour votre famille. Simple, abordable, adapté à la classe moyenne québécoise.", href: "/services/assurance-vie-temporaire" },
+              { icon: TrendingUp, title: "Fonds de placement", desc: "Fonds communs, fonds distincts et solutions d'investissement adaptés à vos objectifs de retraite.", href: "/services/fonds-de-placement" },
+              { icon: PiggyBank, title: "Élimination des dettes", desc: "Stratégies concrètes pour rembourser vos dettes et hypothèques plus rapidement.", href: "/services/elimination-dettes" },
+              { icon: Heart, title: "Protection invalidité", desc: "Revenu de remplacement si vous ne pouvez plus travailler. Protégez ce qui compte le plus.", href: "#" },
+              { icon: FileText, title: "Analyse financière", desc: "Bilan financier complet et gratuit pour toute famille québécoise. Sans obligation.", href: "#" },
+              { icon: TrendingUp, title: "Calculateurs interactifs", desc: "Estimez vos besoins d'assurance, votre retraite et votre plan de désendettement en 1 clic.", href: "/calculateurs" }
             ].map((service, i) => (
-              <div key={i} className="bg-[#1E293B]/50 border border-slate-700 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 hover:border-[#F59E0B]/50 hover:shadow-lg hover:shadow-[#F59E0B]/5 group">
+              <Link 
+                key={i} 
+                href={service.href}
+                className="bg-[#1E293B]/50 border border-slate-700 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 hover:border-[#F59E0B]/50 hover:shadow-lg hover:shadow-[#F59E0B]/5 group block relative"
+              >
+                {('badge' in service) && (
+                  <span className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse">
+                    {(service as any).badge}
+                  </span>
+                )}
                 <div className="w-14 h-14 rounded-xl bg-[#F59E0B]/10 flex items-center justify-center mb-6 group-hover:bg-[#F59E0B]/20 transition-colors">
                   <service.icon className="w-7 h-7 text-[#F59E0B]" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{service.title}</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xl font-bold text-white">{service.title}</h3>
+                  <ChevronRight className="w-5 h-5 text-[#F59E0B] opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
                 <p className="text-slate-400 leading-relaxed">{service.desc}</p>
-              </div>
+              </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION - GUIDE GRATUIT */}
+      <section className="py-16 bg-[#F59E0B]/5 border-y border-[#F59E0B]/20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-[#0B1120] rounded-[2.5rem] p-8 md:p-16 border border-slate-800 flex flex-col md:flex-row items-center gap-12 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F59E0B]/10 rounded-full blur-3xl -mr-32 -mt-32" />
+            
+            <div className="flex-1 relative z-10 text-center md:text-left">
+              <span className="inline-block bg-[#F59E0B] text-[#0B1120] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-6">
+                Contenu Gratuit
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">
+                Guide Complet des Finances <br />
+                <span className="text-[#F59E0B]">Personnelles Québécoises</span>
+              </h2>
+              <p className="text-slate-400 text-lg mb-8 leading-relaxed max-w-xl">
+                Découvrez comment protéger votre famille et bâtir votre patrimoine avec notre guide de 10 pages conçu spécifiquement pour la réalité du Québec.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <Link 
+                  href="/guide" 
+                  className="bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-black px-8 py-4 rounded-2xl transition-all shadow-lg shadow-[#F59E0B]/10 flex items-center justify-center gap-2"
+                >
+                  Lire le guide gratuit <ChevronRight className="w-5 h-5" />
+                </Link>
+                <div className="flex items-center gap-3 px-4 text-slate-500 text-sm font-bold">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> Format PDF inclus
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full md:w-80 shrink-0 relative group">
+              <div className="absolute inset-0 bg-[#F59E0B] rounded-2xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
+              <div className="relative bg-white p-6 rounded-2xl border-4 border-slate-800 shadow-2xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                <div className="bg-blue-900 h-4 w-full rounded-full mb-4" />
+                <div className="bg-slate-100 h-40 w-full rounded-lg mb-4 flex items-center justify-center text-4xl">
+                  📋
+                </div>
+                <div className="space-y-2">
+                  <div className="bg-slate-100 h-2 w-full rounded-full" />
+                  <div className="bg-slate-100 h-2 w-3/4 rounded-full" />
+                  <div className="bg-slate-100 h-2 w-1/2 rounded-full" />
+                </div>
+                <div className="mt-6 flex justify-between items-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-100" />
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Planify</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -403,7 +477,7 @@ ${repForm.message}`;
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black text-white mb-4">De zéro à représentant accrédité</h2>
-            <p className="text-[#F59E0B] text-lg font-medium">Délai moyen: 4 à 8 semaines</p>
+            <p className="text-[#F59E0B] text-lg font-medium">Permis AMF: 4 à 8 semaines | Accréditation complète: 4 à 5 mois</p>
           </div>
 
           <div className="relative">

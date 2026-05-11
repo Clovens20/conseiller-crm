@@ -37,9 +37,9 @@ export default function PrivacyPolicyPage() {
       lastUpdated={content.last_updated}
       badge="Conforme à la Loi 25 du Québec"
     >
-      <div 
+      <div
         className="prose prose-invert max-w-none prose-slate px-4 md:px-0"
-        dangerouslySetInnerHTML={{ __html: content.content }} 
+        dangerouslySetInnerHTML={{ __html: content.content }}
       />
     </LegalPageLayout>
   );
