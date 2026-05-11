@@ -320,12 +320,30 @@ export const incrementFormVisits = async (slug: string, analyticsData: any = {})
 
 export const incrementSiteVisit = async () => {
   try {
-    const { data: current } = await supabase.from('site_stats').select('count').eq('page', 'landing').maybeSingle();
+    const { data: current, error: fetchError } = await supabase
+      .from('site_stats')
+      .select('count')
+      .eq('page', 'landing')
+      .maybeSingle();
+    
+    if (fetchError) {
+      if (fetchError.code === '42P01') return; // Table doesn't exist yet
+      throw fetchError;
+    }
+
     if (current) {
-      await supabase.from('site_stats').update({ count: (current.count || 0) + 1 }).eq('page', 'landing');
+      await supabase
+        .from('site_stats')
+        .update({ count: (current.count || 0) + 1 })
+        .eq('page', 'landing');
+    } else {
+      // First visit, create the row
+      await supabase
+        .from('site_stats')
+        .insert({ page: 'landing', count: 1 });
     }
   } catch (err) {
-    // Silently fail
+    console.error('Error incrementing site visit:', err);
   }
 };
 
