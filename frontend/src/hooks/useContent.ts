@@ -13,18 +13,17 @@ export function useContent(pageSlug: string, sectionId: string = 'main', default
           .select('content')
           .eq('page_slug', pageSlug)
           .eq('section_id', sectionId)
-          .single();
+          .maybeSingle();
 
         if (error) {
-          if (error.code === 'PGRST116') {
-            // No record found, use defaults
-            setContent(defaultContent);
-          } else {
-            console.error('Error fetching site content:', error);
-          }
+          console.error('Error fetching site content:', error);
+          setContent(defaultContent);
         } else if (data) {
           // Merge defaults with saved content to ensure no missing keys
           setContent({ ...defaultContent, ...data.content });
+        } else {
+          // No record found, use defaults
+          setContent(defaultContent);
         }
       } catch (err) {
         console.error('Unexpected error fetching site content:', err);

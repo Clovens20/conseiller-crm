@@ -132,6 +132,21 @@ export default function CMSPage() {
         ] 
       }
     },
+    analyse: {
+      hero: { badge: '🆓 100 % Gratuit — Accrédité AMF Québec', title: "Bilan financier complet et gratuit", subtitle: "En 60 minutes, un conseiller accrédité AMF analyse votre situation complète : dettes, assurances, épargne et retraite." },
+      intro: { heading: "Votre argent travaille-t-il aussi fort que vous ?", p1: "La majorité des familles québécoises n'ont jamais eu de regard externe professionnel.", p2: "Le bilan Planify est comme un check-up médical pour vos finances." },
+      benefits: { title: "Ce que couvre votre bilan", items: [{icon: '💳', title: 'Analyse des dettes', description: 'Hypothèque, cartes, prêts.'}] },
+      howItWorks: {
+        title: "Comment ça marche",
+        steps: [
+          { number: "1", title: "Contact", description: "Planifiez votre appel." },
+          { number: "2", title: "Bilan", description: "Analyse complète." },
+          { number: "3", title: "Plan", description: "Recommandations." },
+          { number: "4", title: "Suivi", description: "Mise en action." }
+        ]
+      },
+      faqs: { title: "Questions fréquentes", items: [{question: 'Est-ce vraiment gratuit?', answer: 'Oui, 100% gratuit.'}] }
+    },
     guide: { 
       hero: { 
         title: "Débloquez votre Guide Financier", 
@@ -171,6 +186,7 @@ export default function CMSPage() {
   const [assurance, setAssurance] = useState<any>(DEFAULTS.assurance);
   const [fonds, setFonds] = useState<any>(DEFAULTS.fonds);
   const [dettes, setDettes] = useState<any>(DEFAULTS.dettes);
+  const [analyse, setAnalyse] = useState<any>(DEFAULTS.analyse);
   const [guide, setGuide] = useState<any>(DEFAULTS.guide);
   const [legal, setLegal] = useState<any>(DEFAULTS.legal);
 
@@ -190,6 +206,7 @@ export default function CMSPage() {
         setAssurance(find('assurance-vie-temporaire', 'main', DEFAULTS.assurance));
         setFonds(find('fonds-placement', 'main', DEFAULTS.fonds));
         setDettes(find('elimination-dettes', 'main', DEFAULTS.dettes));
+        setAnalyse(find('analyse-financiere', 'main', DEFAULTS.analyse));
         setGuide(find('guide', 'main', DEFAULTS.guide));
         
         const priv = data.find(d => d.page_slug === 'privacy' && d.section_id === 'full');
@@ -290,11 +307,12 @@ export default function CMSPage() {
         <Button variant="outline" onClick={() => window.open('/', '_blank')} className="bg-slate-800 border-slate-700 text-white"><Eye className="w-4 h-4 mr-2" /> Voir le site</Button>
       </div>
       <Tabs defaultValue="landing" className="w-full">
-        <div className="overflow-x-auto pb-2"><TabsList className="flex w-max md:w-full bg-slate-800 border-slate-700 h-auto p-1"><TabsTrigger value="landing" className="py-2.5 px-4 flex gap-2"><Globe className="w-4 h-4" /> Accueil</TabsTrigger><TabsTrigger value="assurance" className="py-2.5 px-4 flex gap-2"><Heart className="w-4 h-4" /> Assurance</TabsTrigger><TabsTrigger value="fonds" className="py-2.5 px-4 flex gap-2"><TrendingUp className="w-4 h-4" /> Fonds</TabsTrigger><TabsTrigger value="dettes" className="py-2.5 px-4 flex gap-2"><PiggyBank className="w-4 h-4" /> Dettes</TabsTrigger><TabsTrigger value="guide" className="py-2.5 px-4 flex gap-2"><BookOpen className="w-4 h-4" /> Guide</TabsTrigger><TabsTrigger value="legal" className="py-2.5 px-4 flex gap-2"><Shield className="w-4 h-4" /> Légal</TabsTrigger></TabsList></div>
+        <div className="overflow-x-auto pb-2"><TabsList className="flex w-max md:w-full bg-slate-800 border-slate-700 h-auto p-1"><TabsTrigger value="landing" className="py-2.5 px-4 flex gap-2"><Globe className="w-4 h-4" /> Accueil</TabsTrigger><TabsTrigger value="assurance" className="py-2.5 px-4 flex gap-2"><Heart className="w-4 h-4" /> Assurance</TabsTrigger><TabsTrigger value="fonds" className="py-2.5 px-4 flex gap-2"><TrendingUp className="w-4 h-4" /> Fonds</TabsTrigger><TabsTrigger value="dettes" className="py-2.5 px-4 flex gap-2"><PiggyBank className="w-4 h-4" /> Dettes</TabsTrigger><TabsTrigger value="analyse" className="py-2.5 px-4 flex gap-2"><FileText className="w-4 h-4" /> Analyse</TabsTrigger><TabsTrigger value="guide" className="py-2.5 px-4 flex gap-2"><BookOpen className="w-4 h-4" /> Guide</TabsTrigger><TabsTrigger value="legal" className="py-2.5 px-4 flex gap-2"><Shield className="w-4 h-4" /> Légal</TabsTrigger></TabsList></div>
         <TabsContent value="landing" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={landing} setData={setLanding} slug="landing" /></Card></TabsContent>
         <TabsContent value="assurance" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={assurance} setData={setAssurance} slug="assurance-vie-temporaire" /></Card></TabsContent>
         <TabsContent value="fonds" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={fonds} setData={setFonds} slug="fonds-placement" /></Card></TabsContent>
         <TabsContent value="dettes" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={dettes} setData={setDettes} slug="elimination-dettes" /></Card></TabsContent>
+        <TabsContent value="analyse" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6"><ServiceEditor data={analyse} setData={setAnalyse} slug="analyse-financiere" /></Card></TabsContent>
         <TabsContent value="guide" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6 space-y-6"><div><Label className="text-slate-400 uppercase text-[10px] font-black">Titre</Label><Input className="bg-slate-900 border-slate-700" value={guide.hero?.title} onChange={e => setGuide({...guide, hero: {...guide.hero, title: e.target.value}})} /></div><div><Label className="text-slate-400 uppercase text-[10px] font-black">Sous-titre</Label><textarea className="bg-slate-900 border-slate-700 rounded-xl p-4 text-sm min-h-[100px]" value={guide.hero?.subtitle} onChange={e => setGuide({...guide, hero: {...guide.hero, subtitle: e.target.value}})} /></div><Button disabled={saving} onClick={() => saveSection('guide', guide)} className="bg-blue-600 hover:bg-blue-500 w-full py-6 font-bold rounded-2xl"><Save className="w-5 h-5 mr-2" /> Enregistrer Guide</Button></Card></TabsContent>
         <TabsContent value="legal" className="pt-4"><Card className="bg-slate-800 border-slate-700 text-white p-6 space-y-8">
             <div className="grid gap-3">

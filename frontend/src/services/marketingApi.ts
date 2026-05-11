@@ -320,7 +320,7 @@ export const incrementFormVisits = async (slug: string, analyticsData: any = {})
 
 export const incrementSiteVisit = async () => {
   try {
-    const { data: current } = await supabase.from('site_stats').select('count').eq('page', 'landing').single();
+    const { data: current } = await supabase.from('site_stats').select('count').eq('page', 'landing').maybeSingle();
     if (current) {
       await supabase.from('site_stats').update({ count: (current.count || 0) + 1 }).eq('page', 'landing');
     }
@@ -331,7 +331,7 @@ export const incrementSiteVisit = async () => {
 
 export const getSiteVisits = async () => {
   try {
-    const { data, error } = await supabase.from('site_stats').select('count').eq('page', 'landing').single();
+    const { data, error } = await supabase.from('site_stats').select('count').eq('page', 'landing').maybeSingle();
     if (error) return 0;
     return data?.count || 0;
   } catch {

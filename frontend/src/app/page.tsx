@@ -273,8 +273,7 @@ ${repForm.message}`;
               { icon: Shield, title: "Assurance-vie temporaire", desc: "Protection maximale pour votre famille. Simple, abordable, adapté à la classe moyenne québécoise.", href: "/services/assurance-vie-temporaire" },
               { icon: TrendingUp, title: "Fonds de placement", desc: "Fonds communs, fonds distincts et solutions d'investissement adaptés à vos objectifs de retraite.", href: "/services/fonds-de-placement" },
               { icon: PiggyBank, title: "Élimination des dettes", desc: "Stratégies concrètes pour rembourser vos dettes et hypothèques plus rapidement.", href: "/services/elimination-dettes" },
-              { icon: Heart, title: "Protection invalidité", desc: "Revenu de remplacement si vous ne pouvez plus travailler. Protégez ce qui compte le plus.", href: "#" },
-              { icon: FileText, title: "Analyse financière", desc: "Bilan financier complet et gratuit pour toute famille québécoise. Sans obligation.", href: "#" },
+              { icon: FileText, title: "Analyse financière", desc: "Bilan financier complet et gratuit pour toute famille québécoise. Sans obligation.", href: "/services/analyse-financiere" },
               { icon: TrendingUp, title: "Calculateurs interactifs", desc: "Estimez vos besoins d'assurance, votre retraite et votre plan de désendettement en 1 clic.", href: "/calculateurs" }
             ].map((service, i) => (
               <Link 
