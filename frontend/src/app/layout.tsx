@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PostHogProvider } from "@/contexts/PostHogProvider";
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
 
 import { organizationSchema } from "@/lib/schema";
 
@@ -26,6 +27,19 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZE7WF89F4H"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-ZE7WF89F4H');
+          `}
+        </Script>
       </head>
       <body className={`${inter.className} bg-slate-900 antialiased`}>
         <PostHogProvider>
