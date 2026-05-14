@@ -82,14 +82,18 @@ const ClientFormPage = () => {
     setSaving(true);
     
     try {
+      // Clean data before sending
       const submitData = {
-        ...formData,
+        prenom: formData.prenom.trim(),
+        nom: formData.nom.trim(),
+        telephone: formData.telephone.trim(),
+        courriel: formData.courriel?.trim() || null,
+        adresse: formData.adresse?.trim() || null,
+        conjoint: formData.conjoint?.trim() || null,
         nb_enfants: parseInt(formData.nb_enfants) || 0,
-        date_rdv: formData.date_rdv || null,
+        statut: formData.statut || 'prospect',
+        date_rdv: formData.date_rdv ? (isNaN(new Date(formData.date_rdv).getTime()) ? null : new Date(formData.date_rdv).toISOString()) : null,
         date_suivi: formData.date_suivi || null,
-        courriel: formData.courriel || null,
-        adresse: formData.adresse || null,
-        conjoint: formData.conjoint || null,
         notes: formData.notes || null,
         source: formData.source || null
       };
@@ -103,7 +107,8 @@ const ClientFormPage = () => {
       }
       router.push('/admin/clients');
     } catch (error) {
-      const message = error.response?.data?.detail || 'Une erreur est survenue';
+      console.error('Erreur ClientFormPage:', error);
+      const message = error.message || error.response?.data?.detail || 'Une erreur est survenue';
       toast.error(message);
     } finally {
       setSaving(false);
